@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <Product
+    Id="*"
+    Name="Always CD Ripper"
+    Language="1041"
+    Version="0.9.0.0"
+    Manufacturer="YOUICHI SAIJO"
+    UpgradeCode="838C4673-0D72-4173-A0CC-B9B57F3759F2">
+
+    <Package
+      InstallerVersion="400"
+      Compressed="yes"
+      InstallScope="perMachine"
+      Description="Always CD Ripper - High Fidelity CD Ripper"
+      Manufacturer="YOUICHI SAIJO"
+      Comments="Always CD Ripper v0.9.0 Preview" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Icon Id="AppIcon.ico" SourceFile="icon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/YOUICHI-del" />
+
+    <Feature Id="ProductFeature" Title="Always CD Ripper" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentGroupRef Id="QtDlls" />
+      <ComponentGroupRef Id="VcpkgDlls" />
+      <ComponentGroupRef Id="PlatformsPlugin" />
+      <ComponentGroupRef Id="StylesPlugin" />
+      <ComponentGroupRef Id="ImageFormatsPlugin" />
+      <ComponentRef Id="ApplicationShortcutDesktop" />
+      <ComponentRef Id="ApplicationShortcutStartMenu" />
+    </Feature>
+
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="Always CD Ripper">
+          <Directory Id="PlatformsDir"    Name="platforms" />
+          <Directory Id="StylesDir"       Name="styles" />
+          <Directory Id="ImageFormatsDir" Name="imageformats" />
+        </Directory>
+      </Directory>
+      <Directory Id="DesktopFolder" Name="Desktop" />
+      <Directory Id="ProgramMenuFolder" Name="Programs">
+        <Directory Id="StartMenuFolder" Name="Always CD Ripper" />
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="MainExecutable" Guid="*">
+        <File Id="AlwaysCDRipperExe" Source="AlwaysCDRipper.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="AppIconFile" Guid="*">
+        <File Id="AppIcoFile" Source="icon.ico" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="QtDlls" Directory="INSTALLFOLDER">
+      <Component Id="Qt6Core"     Guid="*"><File Source="Qt6Core.dll"        KeyPath="yes"/></Component>
+      <Component Id="Qt6Gui"      Guid="*"><File Source="Qt6Gui.dll"         KeyPath="yes"/></Component>
+      <Component Id="Qt6Widgets"  Guid="*"><File Source="Qt6Widgets.dll"     KeyPath="yes"/></Component>
+      <Component Id="Qt6Network"  Guid="*"><File Source="Qt6Network.dll"     KeyPath="yes"/></Component>
+      <Component Id="Qt6Svg"      Guid="*"><File Source="Qt6Svg.dll"         KeyPath="yes"/></Component>
+      <Component Id="D3DCompiler" Guid="*"><File Source="D3Dcompiler_47.dll" KeyPath="yes"/></Component>
+      <Component Id="OpenGL32sw"  Guid="*"><File Source="opengl32sw.dll"     KeyPath="yes"/></Component>
+      <Component Id="IcuUc"       Guid="*"><File Source="icuuc.dll"          KeyPath="yes"/></Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="VcpkgDlls" Directory="INSTALLFOLDER">
+      <Component Id="FlacDll" Guid="*"><File Source="FLAC.dll"  KeyPath="yes"/></Component>
+      <Component Id="TagDll"  Guid="*"><File Source="tag.dll"   KeyPath="yes"/></Component>
+      <Component Id="OggDll"  Guid="*"><File Source="ogg.dll"   KeyPath="yes"/></Component>
+      <Component Id="ZlibDll" Guid="*"><File Source="zlib1.dll" KeyPath="yes"/></Component>
+    </ComponentGroup>
+
+    <!-- platforms サブフォルダ -->
+    <ComponentGroup Id="PlatformsPlugin" Directory="PlatformsDir">
+      <Component Id="PlatformWindows" Guid="*">
+        <File Source="platforms\qwindows.dll" KeyPath="yes"/>
+      </Component>
+    </ComponentGroup>
+
+    <!-- styles サブフォルダ -->
+    <ComponentGroup Id="StylesPlugin" Directory="StylesDir">
+      <Component Id="StyleWindows" Guid="*">
+        <File Source="styles\qmodernwindowsstyle.dll" KeyPath="yes"/>
+      </Component>
+    </ComponentGroup>
+
+    <!-- imageformats サブフォルダ -->
+    <ComponentGroup Id="ImageFormatsPlugin" Directory="ImageFormatsDir">
+      <Component Id="ImageFormatJpeg" Guid="*">
+        <File Source="imageformats\qjpeg.dll" KeyPath="yes"/>
+      </Component>
+    </ComponentGroup>
+
+    <Component Id="ApplicationShortcutDesktop" Guid="*" Directory="DesktopFolder">
+      <Shortcut Id="DesktopShortcut"
+                Name="Always CD Ripper"
+                Target="[INSTALLFOLDER]AlwaysCDRipper.exe"
+                WorkingDirectory="INSTALLFOLDER"
+                Icon="AppIcon.ico" />
+      <RemoveFolder Id="RemoveDesktopFolder" Directory="DesktopFolder" On="uninstall"/>
+      <RegistryValue Root="HKCU"
+                     Key="Software\YOUICHISAIJO\AlwaysCDRipper"
+                     Name="DesktopShortcut"
+                     Type="integer" Value="1" KeyPath="yes"/>
+    </Component>
+
+    <Component Id="ApplicationShortcutStartMenu" Guid="*" Directory="StartMenuFolder">
+      <Shortcut Id="StartMenuShortcut"
+                Name="Always CD Ripper"
+                Target="[INSTALLFOLDER]AlwaysCDRipper.exe"
+                WorkingDirectory="INSTALLFOLDER"
+                Icon="AppIcon.ico" />
+      <RemoveFolder Id="RemoveStartMenuFolder" Directory="StartMenuFolder" On="uninstall"/>
+      <RegistryValue Root="HKCU"
+                     Key="Software\YOUICHISAIJO\AlwaysCDRipper"
+                     Name="StartMenuShortcut"
+                     Type="integer" Value="1" KeyPath="yes"/>
+    </Component>
+
+  </Fragment>
+
+</Wix>
