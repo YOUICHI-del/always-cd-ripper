@@ -57,6 +57,25 @@ public:
     int  sampleOffset() const { return m_sampleOffset; }
     void setSampleOffset(int v) { m_sampleOffset = v; }
 
+    // リッピング速度制御（物理CDドライブのみ有効）
+    // speedKBps: 300=2x / 600=4x / 1200=8x / 2400=16x
+    bool setReadSpeed(int speedKBps);
+
+    // 速度定数（音楽CD基準: 1x = 150 KB/s）
+    static constexpr int SPEED_2X  = 300;
+    static constexpr int SPEED_4X  = 600;
+    static constexpr int SPEED_8X  = 1200;
+    static constexpr int SPEED_16X = 2400;
+
+    // cue解析（publicで使用可能）
+    DiscInfo parseCue(const QString &cuePath);
+    DiscInfo parseCueFile(const QString &cuePath) { return parseCue(cuePath); }
+
+    // 直前のセクタ読み取りでのリトライ回数
+    int lastRetryCount()    const { return m_lastRetryCount; }
+    int lastC2Errors()      const { return m_lastC2Errors; }
+    int lastReadSpeedKBps() const { return m_lastReadSpeedKBps; }
+
 private:
     // 物理ドライブ
     HANDLE    m_handle       = INVALID_HANDLE_VALUE;
@@ -70,8 +89,11 @@ private:
     QString   m_sourceName;
     int       m_sampleOffset = 0;
 
-    // cue解析
-    DiscInfo  parseCue(const QString &cuePath);
     QByteArray readSectorFromBin(DWORD lba);
     QByteArray readSectorFromDrive(DWORD lba);
+
+    int m_lastRetryCount    = 0;
+    int m_lastC2Errors      = 0;
+    int m_lastReadSpeedKBps = 0;
 };
+

@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QTextStream>
 #include <ntddcdrm.h>
+#include <ntddscsi.h>   // SCSI_PASS_THROUGH_DIRECT
 
 static constexpr int CD_RAW_SECTOR_SIZE = 2352;
 
@@ -246,6 +247,31 @@ DiscInfo CdDrive::parseCue(const QString &cuePath)
 
 
 // ────────────────────────────────────────────
+// リッピング速度制御
+// ────────────────────────────────────────────
+
+bool CdDrive::setReadSpeed(int speedKBps)
+{
+    if (m_handle == INVALID_HANDLE_VALUE) return false;
+
+    CDROM_SET_SPEED req = {};
+    req.RequestType     = CdromSetSpeed;
+    req.ReadSpeed       = (USHORT)speedKBps;  // KB/s単位
+    req.WriteSpeed      = 0;
+    req.RotationControl = CdromDefaultRotation;
+
+    DWORD bytes = 0;
+    BOOL ok = DeviceIoControl(
+        m_handle, IOCTL_CDROM_SET_SPEED,
+        &req, sizeof(req),
+        nullptr, 0, &bytes, nullptr);
+
+    qDebug() << "[CdDrive] setReadSpeed:" << speedKBps << "KB/s =>"
+             << (ok ? "OK" : "FAILED") << "(err=" << GetLastError() << ")";
+    return ok == TRUE;
+}
+
+// ────────────────────────────────────────────
 // TOC読み取り
 // ────────────────────────────────────────────
 
@@ -331,13 +357,33 @@ QByteArray CdDrive::readSectorFromDrive(DWORD lba)
     QByteArray buf(CD_RAW_SECTOR_SIZE, '\0');
     DWORD bytesReturned = 0;
 
-    BOOL ok = DeviceIoControl(
-        m_handle, IOCTL_CDROM_RAW_READ,
-        &rri, sizeof(rri),
-        buf.data(), CD_RAW_SECTOR_SIZE,
-        &bytesReturned, nullptr);
+    static constexpr int MAX_RETRIES = 10;
+    m_lastRetryCount  = 0;
+    m_lastC2Errors    = 0;
+    m_lastReadSpeedKBps = 0;
 
-    if (!ok || bytesReturned != (DWORD)CD_RAW_SECTOR_SIZE)
-        return {};
-    return buf;
+    LARGE_INTEGER freq, t0, t1;
+    QueryPerformanceFrequency(&freq);
+    QueryPerformanceCounter(&t0);
+
+    for (int attempt = 0; attempt <= MAX_RETRIES; ++attempt) {
+        BOOL ok = DeviceIoControl(
+            m_handle, IOCTL_CDROM_RAW_READ,
+            &rri, sizeof(rri),
+            buf.data(), CD_RAW_SECTOR_SIZE,
+            &bytesReturned, nullptr);
+
+        if (ok && bytesReturned == (DWORD)CD_RAW_SECTOR_SIZE) {
+            QueryPerformanceCounter(&t1);
+            double sec = (double)(t1.QuadPart - t0.QuadPart) / freq.QuadPart;
+            // 2352バイト / 経過秒 → KB/s
+            if (sec > 0.0)
+                m_lastReadSpeedKBps = (int)(CD_RAW_SECTOR_SIZE / sec / 1024.0);
+            return buf;
+        }
+    }
+
+    // 全リトライ失敗 → エラーセクタ
+    m_lastC2Errors = 1;
+    return {};
 }

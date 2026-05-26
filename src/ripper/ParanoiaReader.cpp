@@ -12,10 +12,11 @@ ParanoiaReader::ParanoiaReader(QObject *parent)
 QByteArray ParanoiaReader::readSectorWithVerify(
     CdDrive &drive, DWORD lba, SectorResult &out)
 {
-    out.lba      = lba;
-    out.retries  = 0;
-    out.hasError = false;
-    out.perfect  = false;
+    out.lba       = lba;
+    out.retries   = 0;
+    out.hasError  = false;
+    out.perfect   = false;
+    out.speedKBps = 0;
 
     // 読み取り結果の投票マップ: データ → 出現回数
     QMap<QByteArray, int> votes;
@@ -38,7 +39,13 @@ QByteArray ParanoiaReader::readSectorWithVerify(
     out.retries++;
 
     // 不一致 → 最大 m_maxRetries 回まで再試行
+    // キャッシュ掃き出し: 再読み取り前に隣接セクタを読んでキャッシュを無効化
     for (int i = 2; i < m_maxRetries && !m_abort; ++i) {
+        // 隣接セクタ（lba+1）を読んでドライブキャッシュを追い出す
+        // 読み取り結果は使わない（キャッシュフラッシュ目的のみ）
+        DWORD flushLba = (lba > 0) ? lba - 1 : lba + 1;
+        drive.readSectorRaw(flushLba);
+
         QByteArray buf = drive.readSectorRaw(lba);
         if (buf.isEmpty()) {
             out.retries++;
@@ -83,14 +90,33 @@ QVector<qint16> ParanoiaReader::readTrack(CdDrive &drive, const TrackInfo &track
     QVector<qint16> pcm;
     pcm.reserve(sectorsTotal * samplesPer);
 
+    // 物理CDモード強制フラグが立っている場合は投票方式を使う
+    // （runPhysicalCD Step3でCUEトラック情報を使う場合に必要）
+    bool isCueMode = !m_forcePhysical && (track.isWave || !track.binFile.isEmpty());
+
     for (DWORD lba = track.startSector;
          lba <= track.endSector && !m_abort; ++lba)
     {
         SectorResult sr;
-        QByteArray data = readSectorWithVerify(drive, lba, sr);
+        QByteArray data;
+
+        if (isCueMode) {
+            // CUEモード: 直接1回読み取り（常にperfect）
+            data = drive.readSectorRaw(lba);
+            sr.lba        = lba;
+            sr.retries    = 0;
+            sr.hasError   = data.isEmpty();
+            sr.perfect    = !data.isEmpty();
+            sr.speedKBps  = 0;
+            if (data.isEmpty())
+                data = QByteArray(CD_RAW_SECTOR_SIZE, '\0');
+        } else {
+            // 物理CDモード: 投票方式
+            data = readSectorWithVerify(drive, lba, sr);
+        }
+
         m_results.append(sr);
 
-        // バイト列を qint16 に変換（リトルエンディアン）
         const qint16 *samples = reinterpret_cast<const qint16 *>(data.constData());
         for (int i = 0; i < samplesPer; ++i)
             pcm.append(samples[i]);
@@ -102,5 +128,30 @@ QVector<qint16> ParanoiaReader::readTrack(CdDrive &drive, const TrackInfo &track
             sectorsTotal);
     }
 
-    return m_abort ? QVector<qint16>() : pcm;
+    if (m_abort) return QVector<qint16>();
+
+    // ── サンプルオフセット補正 ──────────────────────────────
+    // ドライブごとの読み取りズレを補正する
+    // 正値: 先頭をその分だけ削除して末尾に無音を追加
+    // 負値: 先頭に無音を追加して末尾をその分だけ削除
+    int offset = drive.sampleOffset();
+    if (offset != 0) {
+        if (offset > 0) {
+            // 先頭offset個を削除、末尾にoffset個の無音を追加
+            if (offset < pcm.size()) {
+                pcm.remove(0, offset);
+                pcm.append(QVector<qint16>(offset, 0));
+            }
+        } else {
+            // 先頭に|offset|個の無音を追加、末尾|offset|個を削除
+            int abs_offset = -offset;
+            if (abs_offset < pcm.size()) {
+                pcm = QVector<qint16>(abs_offset, 0) + pcm;
+                pcm.resize(pcm.size() - abs_offset);
+            }
+        }
+    }
+    // ────────────────────────────────────────────────────────
+
+    return pcm;
 }

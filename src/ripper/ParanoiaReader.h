@@ -10,6 +10,7 @@ struct SectorResult {
     int     retries;     // 再試行回数
     bool    hasError;    // 最終的にエラーあり
     bool    perfect;     // 1回で完全一致
+    int     speedKBps;  // 読み取り速度（KB/s）
 };
 
 using SectorCallback   = std::function<void(const SectorResult &)>;
@@ -27,6 +28,9 @@ public:
     // 最大再試行回数（デフォルト20）
     void setMaxRetries(int n) { m_maxRetries = n; }
 
+    // 物理CDモードを強制（CUEトラック情報でも投票方式を使う）
+    void setForcePhysicalMode(bool v) { m_forcePhysical = v; }
+
     // トラックを読み取り PCMデータを返す
     QVector<qint16> readTrack(CdDrive &drive, const TrackInfo &track);
 
@@ -41,7 +45,8 @@ private:
 
     SectorCallback        m_sectorCb;
     ProgressCallback      m_progressCb;
-    bool                  m_abort      = false;
+    bool                  m_abort         = false;
+    bool                  m_forcePhysical = false;
     int                   m_maxRetries = 20;
     QVector<SectorResult> m_results;
 };

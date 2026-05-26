@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "MetadataEditor.h"
+#include "../metadata/GnuDb.h"
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QGridLayout>
@@ -15,9 +16,20 @@
 #include <QCheckBox>
 #include <QTabWidget>
 #include <QApplication>
+#include <QMessageBox>
 #include <QThread>
 #include <QDir>
 #include <QRegularExpression>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QEventLoop>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QUrl>
+#include <QtConcurrent/QtConcurrent>
+#include <QFutureWatcher>
 
 // ステップ名
 static const char *STEP_NAMES[] = {
@@ -26,14 +38,13 @@ static const char *STEP_NAMES[] = {
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
+    , m_nam(new QNetworkAccessManager(this))
 {
     setWindowTitle("Always CD Ripper");
     setMinimumSize(960, 620);
     resize(1100, 680);
 
     m_reader = new ParanoiaReader(this);
-    m_mb     = new MusicBrainz(this);
-    connect(m_mb, &MusicBrainz::resultsReady, this, &MainWindow::onMetadataReady);
 
     setupUi();
     applyStyle();
@@ -164,33 +175,36 @@ QWidget *MainWindow::buildStep0_Source()
         for (auto &d : real)
             m_driveCombo->addItem("CD-ROM  " + d, d);
     } else {
-        m_driveCombo->addItem("[DEMO]  Kind of Blue / Miles Davis", "DEMO");
+        m_driveCombo->setPlaceholderText("No CD drive detected");
+        m_driveCombo->setEnabled(false);
     }
 #else
-    m_driveCombo->addItem("[DEMO]  Kind of Blue / Miles Davis", "DEMO");
+    m_driveCombo->setPlaceholderText("No CD drive detected");
+    m_driveCombo->setEnabled(false);
 #endif
 
     auto *driveRow = new QHBoxLayout;
-    driveRow->addWidget(new QLabel("ドライブ:"));
+    driveRow->addWidget(new QLabel("Drive:"));
     driveRow->addWidget(m_driveCombo, 1);
+
+    auto *refreshBtn = new QPushButton("↺");
+    refreshBtn->setObjectName("browseBtn");
+    refreshBtn->setFixedWidth(36);
+    refreshBtn->setToolTip("Refresh CD drives");
+    connect(refreshBtn, &QPushButton::clicked, this, [this]() {
+        m_driveCombo->clear();
+        m_driveCombo->setEnabled(true);
+        QStringList drives = CdDrive::availableDrives();
+        if (!drives.isEmpty()) {
+            for (auto &d : drives)
+                m_driveCombo->addItem("CD-ROM  " + d, d);
+        } else {
+            m_driveCombo->setPlaceholderText("No CD drive detected");
+            m_driveCombo->setEnabled(false);
+        }
+    });
+    driveRow->addWidget(refreshBtn);
     cgl->addLayout(driveRow);
-
-    // ドライブ情報グリッド
-    auto *infoGrid = new QGridLayout;
-    infoGrid->setSpacing(8);
-    infoGrid->setColumnMinimumWidth(0, 120);
-
-    auto addInfoRow = [&](int row, const QString &label, QLabel *&val, const QString &init){
-        auto *lbl = new QLabel(label); lbl->setObjectName("formLabel");
-        val = new QLabel(init);        val->setObjectName("driveInfoVal");
-        infoGrid->addWidget(lbl, row, 0);
-        infoGrid->addWidget(val, row, 1);
-    };
-
-    addInfoRow(0, "Model",         m_driveModel,  "—");
-    addInfoRow(1, "Sample Offset", m_driveOffset, "—");
-    addInfoRow(2, "CD Status",     m_driveStatus, "—");
-    cgl->addLayout(infoGrid);
     vl->addWidget(cdGroup);
 
     // cueファイル選択
@@ -212,15 +226,10 @@ QWidget *MainWindow::buildStep0_Source()
         if (!path.isEmpty()) {
             m_cuePath->setText(path);
             m_driveCombo->setCurrentIndex(-1);
-            m_driveModel->setText("CUE/BIN mode");
-            m_driveOffset->setText("+0 samples");
 
             // CUEを解析してメタデータを取得
             if (m_drive.openCue(path)) {
                 DiscInfo info = m_drive.readToc();
-                m_driveStatus->setText(
-                    QString("✦  CUE loaded  ( %1 tracks )").arg(info.tracks.size()));
-                m_driveStatus->setStyleSheet("color:#4db8ff;");
 
                 // メタデータ画面に反映
                 if (!info.albumTitle.isEmpty()) m_edAlbum->setText(info.albumTitle);
@@ -235,7 +244,7 @@ QWidget *MainWindow::buildStep0_Source()
                     m_trackTable->setItem(r,0,new QTableWidgetItem(
                         QString("%1").arg(t.number,2,10,QChar('0'))));
                     m_trackTable->setItem(r,1,new QTableWidgetItem(
-                        t.title.isEmpty() ? QString("Track %1").arg(t.number) : t.title));
+                        t.title.isEmpty() ? QString() : t.title));
                     int sec = t.durationSec;
                     m_trackTable->setItem(r,2,new QTableWidgetItem(
                         QString("%1:%2").arg(sec/60).arg(sec%60,2,10,QChar('0'))));
@@ -243,33 +252,24 @@ QWidget *MainWindow::buildStep0_Source()
                     m_trackTable->setRowHeight(r,26);
                 }
                 m_discInfo = info;
+
+                // アルバムアートをWinHTTPで取得（スレッド不問）
+                m_coverArt = m_cover.fetch(info.artist, info.albumTitle);
+                if (!m_coverArt.isNull() && m_artLabel) {
+                    m_artLabel->setPixmap(m_coverArt.scaled(
+                        m_artLabel->size(),
+                        Qt::KeepAspectRatio,
+                        Qt::SmoothTransformation));
+                }
             } else {
-                m_driveStatus->setText("◈  CUE load failed");
-                m_driveStatus->setStyleSheet("color:#ff8c42;");
+                // CUE読み込み失敗
             }
         }
     });
     vl->addWidget(cueGroup);
 
-    // ダミー情報をセット
-    auto updateDriveInfo = [this]() {
-        QString key = m_driveCombo->currentData().toString();
-        if (key == "DEMO") {
-            m_driveModel->setText("PIONEER BDR-209D  [DEMO]");
-            m_driveOffset->setText("+30 samples");
-            m_driveStatus->setText("✦  Audio CD detected  ( 5 tracks )");
-            m_driveStatus->setStyleSheet("color:#4db8ff;");
-        } else if (!key.isEmpty()) {
-            m_driveModel->setText(key);
-            m_driveOffset->setText("Unknown");
-            m_driveStatus->setText("Checking...");
-            m_driveStatus->setStyleSheet("color:#4a7aa0;");
-        }
-    };
-
     connect(m_driveCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, [updateDriveInfo](int){ updateDriveInfo(); });
-    updateDriveInfo();
+            this, [](int){});
 
     // 読み取りモード説明
     auto *noteGroup = new QGroupBox("Read Mode");
@@ -284,6 +284,73 @@ QWidget *MainWindow::buildStep0_Source()
     noteLabel->setObjectName("previewLabel");
     ngl->addWidget(noteLabel);
     vl->addWidget(noteGroup);
+
+    // ── リセットボタン ──────────────────────────────────
+    auto *resetBtn = new QPushButton("⟳  Reset — 最初からやり直す");
+    resetBtn->setObjectName("resetBtn");
+    resetBtn->setFixedHeight(36);
+    connect(resetBtn, &QPushButton::clicked, this, [this]() {
+        // ドライブ選択をクリア
+        m_driveCombo->setCurrentIndex(-1);
+
+        // CUEパスをクリア
+        m_cuePath->clear();
+
+        // メタデータをクリア
+        m_edAlbum->clear();
+        m_edAlbum->setPlaceholderText("");
+        m_edArtist->clear();
+        m_edArtist->setPlaceholderText("");
+        m_edYear->clear();
+        m_edYear->setPlaceholderText("");
+
+        // トラックリストをクリア
+        m_trackTable->setRowCount(0);
+
+        // アルバムアートをクリア
+        m_coverArt = QPixmap();
+        if (m_artLabel) m_artLabel->setText("♪");
+
+        // DISC番号をリセット
+        m_discNumberSpin->setValue(1);
+        m_discTotalSpin->setValue(1);
+
+        // DiscInfoをクリア
+        m_discInfo = DiscInfo();
+        m_mbRelease = MbRelease();
+
+        // ドライブを閉じる
+        m_drive.close();
+
+        // RIP画面をリセット
+        m_sectorMap->reset(0);
+        m_logViewer->clear();
+        m_progress->setValue(0);
+        m_progressLabel->setText("RIP ボタンで開始");
+        m_ripBtn->setEnabled(true);
+        m_totalErrors  = 0;
+        m_totalRetries = 0;
+        m_ripCounter   = 0;
+        m_ripTotal     = 0;
+        // STATISTICSカードをリセット
+        auto resetCard = [](QWidget *card, const QString &val) {
+            auto labels = card->findChildren<QLabel*>();
+            if (labels.size() >= 2) labels[1]->setText(val);
+        };
+        resetCard(m_statPurity,  "—");
+        resetCard(m_statRetries, "0");
+        resetCard(m_statErrors,  "0");
+        resetCard(m_statSpeed,   "—");
+
+        // Step0に戻る
+        m_stack->setCurrentIndex(0);
+        m_step = 0;
+        updateStepIndicator();
+        m_backBtn->setEnabled(false);
+        m_nextBtn->setText("Next  ▶");
+        m_nextBtn->setEnabled(true);
+    });
+    vl->addWidget(resetBtn);
 
     vl->addStretch();
     return page;
@@ -310,7 +377,7 @@ QWidget *MainWindow::buildStep1_Output()
     m_outputPath = new QLineEdit;
     m_outputPath->setObjectName("pathEdit");
     m_outputPath->setPlaceholderText("フォルダを選択...");
-    m_outputPath->setText("D:\\Music");
+    m_outputPath->setText("C:\\Users\\jokun\\Music");
     auto *browseBtn = new QPushButton("参照...");
     browseBtn->setObjectName("browseBtn");
     browseBtn->setFixedWidth(80);
@@ -319,23 +386,30 @@ QWidget *MainWindow::buildStep1_Output()
     connect(browseBtn, &QPushButton::clicked, this, &MainWindow::onBrowseOutput);
     vl->addWidget(outGroup);
 
-    // フォーマット
+    // フォーマット選択（FLAC / WAV）
     auto *fmtGroup = new QGroupBox("出力フォーマット");
     fmtGroup->setObjectName("sourceGroup");
-    auto *fgl = new QHBoxLayout(fmtGroup);
-    fgl->setSpacing(24);
+    auto *fgl = new QVBoxLayout(fmtGroup);
+    fgl->setSpacing(10);
 
-    auto *btnGroup = new QButtonGroup(this);
-    auto *rbFlac = new QRadioButton("FLAC  （可逆圧縮・推奨）");
-    auto *rbWav  = new QRadioButton("WAV   （無圧縮）");
+    auto *rbFlac = new QRadioButton("FLAC  （可逆圧縮・タグ・アルバムアート埋め込み）");
+    auto *rbWav  = new QRadioButton("WAV   （非圧縮・タグ・アルバムアート埋め込み）");
+    rbFlac->setObjectName("fmtRadio");
+    rbWav->setObjectName("fmtRadio");
     rbFlac->setChecked(true);
-    rbFlac->setObjectName("radioBtn");
-    rbWav->setObjectName("radioBtn");
-    btnGroup->addButton(rbFlac);
-    btnGroup->addButton(rbWav);
+
+    auto *fmtBg = new QButtonGroup(fmtGroup);
+    fmtBg->addButton(rbFlac, 0);
+    fmtBg->addButton(rbWav,  1);
+
+    // m_formatCombo を FLAC=0 / WAV=1 の状態保持に流用
+    m_formatCombo = new QComboBox;
+    m_formatCombo->addItem("flac");
+    m_formatCombo->addItem("wav");
+    m_formatCombo->setVisible(false);  // 非表示（状態保持のみ）
+
     fgl->addWidget(rbFlac);
     fgl->addWidget(rbWav);
-    fgl->addStretch();
     vl->addWidget(fmtGroup);
 
     // フォルダ構成プレビュー
@@ -343,16 +417,41 @@ QWidget *MainWindow::buildStep1_Output()
     prevGroup->setObjectName("sourceGroup");
     auto *pgl = new QVBoxLayout(prevGroup);
     auto *prevLabel = new QLabel(
-        "D:\\Music\\\n"
-        "  └─ Miles Davis\\\n"
-        "       └─ (1959) Kind of Blue\\\n"
-        "             ├─ 01. So What.flac\n"
-        "             ├─ 02. Freddie Freeloader.flac\n"
+        "出力先\\\n"
+        "  └─ アーティスト名\\\n"
+        "       └─ (年) アルバム名\\\n"
+        "             ├─ 01. 曲名.flac\n"
+        "             ├─ 02. 曲名.flac\n"
         "             └─ cover.jpg"
     );
     prevLabel->setObjectName("previewLabel");
     pgl->addWidget(prevLabel);
     vl->addWidget(prevGroup);
+
+    // ラジオボタン切り替えでプレビューとm_formatComboを更新
+    connect(fmtBg, QOverload<int>::of(&QButtonGroup::idClicked), this,
+            [this, prevLabel, m_formatCombo = m_formatCombo](int id) {
+        m_formatCombo->setCurrentIndex(id);
+        if (id == 0) {
+            prevLabel->setText(
+                "出力先\\\n"
+                "  └─ アーティスト名\\\n"
+                "       └─ (年) アルバム名\\\n"
+                "             ├─ 01. 曲名.flac\n"
+                "             ├─ 02. 曲名.flac\n"
+                "             └─ cover.jpg"
+            );
+        } else {
+            prevLabel->setText(
+                "出力先\\\n"
+                "  └─ アーティスト名\\\n"
+                "       └─ (年) アルバム名\\\n"
+                "             ├─ 01. 曲名.wav\n"
+                "             ├─ 02. 曲名.wav\n"
+                "             └─ cover.jpg"
+            );
+        }
+    });
 
     vl->addStretch();
     return page;
@@ -381,7 +480,7 @@ QWidget *MainWindow::buildStep2_Metadata()
     m_artLabel->setObjectName("artLabel");
     m_artLabel->setFixedSize(140,140);
     m_artLabel->setAlignment(Qt::AlignCenter);
-    auto *artBtn = new QPushButton("アートを変更");
+    auto *artBtn = new QPushButton("アートを選択");
     artBtn->setObjectName("browseBtn");
     artVl->addWidget(m_artLabel);
     artVl->addWidget(artBtn);
@@ -395,6 +494,7 @@ QWidget *MainWindow::buildStep2_Metadata()
         if (path.isEmpty()) return;
         QPixmap pix(path);
         if (pix.isNull()) return;
+        m_coverArt = pix;
         m_artLabel->setPixmap(
             pix.scaled(140, 140, Qt::KeepAspectRatio, Qt::SmoothTransformation));
         m_artLabel->setText("");
@@ -416,9 +516,36 @@ QWidget *MainWindow::buildStep2_Metadata()
         formVl->addLayout(row);
     };
 
-    addRow("アルバム", m_edAlbum,  "Kind of Blue");
-    addRow("アーティスト", m_edArtist, "Miles Davis");
-    addRow("年",      m_edYear,   "1959");
+    addRow("アルバム",   m_edAlbum,  "");
+    addRow("アーティスト", m_edArtist, "");
+    addRow("年",        m_edYear,   "");
+
+    // DISC番号行
+    {
+        auto *row = new QHBoxLayout;
+        auto *lbl = new QLabel("DISC");
+        lbl->setFixedWidth(80);
+        lbl->setObjectName("formLabel");
+        m_discNumberSpin = new QSpinBox;
+        m_discNumberSpin->setObjectName("formEdit");
+        m_discNumberSpin->setRange(1, 99);
+        m_discNumberSpin->setValue(1);
+        m_discNumberSpin->setFixedWidth(60);
+        m_discTotalSpin = new QSpinBox;
+        m_discTotalSpin->setObjectName("formEdit");
+        m_discTotalSpin->setRange(1, 99);
+        m_discTotalSpin->setValue(1);
+        m_discTotalSpin->setFixedWidth(60);
+        auto *sep = new QLabel(" /  ");
+        sep->setObjectName("formLabel");
+        row->addWidget(lbl);
+        row->addWidget(m_discNumberSpin);
+        row->addWidget(sep);
+        row->addWidget(m_discTotalSpin);
+        row->addStretch();
+        formVl->addLayout(row);
+    }
+
     hl->addLayout(formVl, 1);
     vl->addLayout(hl);
 
@@ -436,20 +563,6 @@ QWidget *MainWindow::buildStep2_Metadata()
     m_trackTable->verticalHeader()->setVisible(false);
     m_trackTable->setFixedHeight(180);
 
-    // ダミーデータ
-    struct T { int n; QString title, dur; };
-    for (auto &t : QList<T>{
-        {1,"So What","9:22"},{2,"Freddie Freeloader","9:46"},
-        {3,"Blue in Green","5:37"},{4,"All Blues","11:33"},
-        {5,"Flamenco Sketches","9:26"}
-    }) {
-        int r = m_trackTable->rowCount();
-        m_trackTable->insertRow(r);
-        m_trackTable->setItem(r,0,new QTableWidgetItem(QString("%1").arg(t.n,2,10,QChar('0'))));
-        m_trackTable->setItem(r,1,new QTableWidgetItem(t.title));
-        m_trackTable->setItem(r,2,new QTableWidgetItem(t.dur));
-        m_trackTable->setRowHeight(r,26);
-    }
     vl->addWidget(m_trackTable);
     vl->addStretch();
     return page;
@@ -497,8 +610,8 @@ QWidget *MainWindow::buildStep3_Rip()
     rl->addWidget(statLbl);
 
     auto *sg = new QGridLayout; sg->setSpacing(6);
-    m_statPurity  = buildStatCard("Purity","—");
-    m_statRetries = buildStatCard("Retries","—");
+    m_statPurity  = buildStatCard("Read Quality","—");
+    m_statRetries = buildStatCard("Slow Sectors","0");
     m_statErrors  = buildStatCard("Errors","—");
     m_statSpeed   = buildStatCard("Speed","—");
     sg->addWidget(m_statPurity, 0,0);
@@ -631,6 +744,8 @@ void MainWindow::applyStyle()
         #pathEdit,#formEdit{background:#07070f;color:#c0d8f0;border:1px solid #0d2a45;border-radius:3px;padding:4px 8px;}
         #browseBtn{background:#07070f;color:#4a7aa0;border:1px solid #0d2a45;border-radius:3px;padding:4px 8px;}
         #browseBtn:hover{color:#4db8ff;border-color:#4db8ff;}
+        #resetBtn{background:#07070f;color:#4a7aa0;border:1px solid #0d2a45;border-radius:3px;padding:6px 12px;font-size:12px;}
+        #resetBtn:hover{color:#4db8ff;border-color:#4db8ff;}
         #previewLabel{color:#2a5a8a;font-family:"Consolas";font-size:8pt;line-height:1.8;}
         #formLabel{color:#2a5a8a;font-size:8pt;}
         #driveInfoVal{color:#c0d8f0;font-size:9pt;}
@@ -677,7 +792,295 @@ void MainWindow::goToStep(int step)
     m_backBtn->setVisible(step > 0);
     m_backBtn->setEnabled(step > 0);
 
-    if (step == 3) {
+    if (step == 2) {
+        // Metadata画面: 物理CDの場合はTOCを読む
+        // currentData()が空の場合もcurrentText()からドライブ文字を取得
+        QString driveKey = m_driveCombo->currentData().toString();
+        if (driveKey.isEmpty()) {
+            // "CD-ROM  E:" のような表示テキストからドライブ文字を抽出
+            QString txt = m_driveCombo->currentText().trimmed();
+            if (!txt.isEmpty()) {
+                // 末尾の "X:" 形式を探す
+                QRegularExpression re("([A-Z]:)");
+                auto m = re.match(txt);
+                if (m.hasMatch()) driveKey = m.captured(1);
+            }
+        }
+        if (!driveKey.isEmpty() && m_cuePath->text().isEmpty()) {
+            // 物理CDドライブモード
+            if (m_drive.open(driveKey)) {
+                DiscInfo info = m_drive.readToc();
+                if (!info.tracks.isEmpty()) {
+                    m_discInfo = info;
+
+                    // トラックリストを更新（まず番号だけ）
+                    m_trackTable->setRowCount(0);
+                    for (auto &t : info.tracks) {
+                        int r = m_trackTable->rowCount();
+                        m_trackTable->insertRow(r);
+                        m_trackTable->setItem(r, 0, new QTableWidgetItem(
+                            QString("%1").arg(t.number, 2, 10, QChar('0'))));
+                        m_trackTable->setItem(r, 1, new QTableWidgetItem(
+                            t.title.isEmpty() ? QString("Track %1").arg(t.number) : t.title));
+                        int sec = t.durationSec;
+                        m_trackTable->setItem(r, 2, new QTableWidgetItem(
+                            QString("%1:%2").arg(sec/60).arg(sec%60, 2, 10, QChar('0'))));
+                        m_trackTable->setRowHeight(r, 26);
+                    }
+
+                    // MusicBrainz lookup + アルバムアート取得を全てバックグラウンドで実行
+                    m_nextBtn->setEnabled(false);
+                    m_edAlbum->setPlaceholderText("検索中...");
+
+                    struct MetaResult {
+                        MbRelease       rel;
+                        GnuDbResult     gnudb;
+                        iTunesAlbumInfo itunes;
+                        QPixmap         cover;
+                    };
+
+                    auto *watcher = new QFutureWatcher<MetaResult>(this);
+                    DiscInfo infoCopy = info;
+                    connect(watcher, &QFutureWatcher<MetaResult>::finished, this,
+                            [this, watcher]() {
+                        MetaResult res = watcher->result();
+                        watcher->deleteLater();
+
+                        m_mbRelease = res.rel;
+
+                        // ── MusicBrainz 成功 ──────────────────
+                        if (!res.rel.title.isEmpty()) {
+                            m_edAlbum->setPlaceholderText("");
+                            m_edAlbum->setText(res.rel.title);
+                            m_edArtist->setText(res.rel.artist);
+                            m_edYear->setText(res.rel.date);
+                            // 複数DISC情報を自動設定
+                            if (res.rel.totalDiscs > 1) {
+                                m_discTotalSpin->setValue(res.rel.totalDiscs);
+                                // 現在のDISCのトラック数で何枚目か推定
+                                int curTracks = m_discInfo.tracks.size();
+                                for (const auto &d : res.rel.discs) {
+                                    if (d.tracks.size() == curTracks) {
+                                        m_discNumberSpin->setValue(d.position);
+                                        break;
+                                    }
+                                }
+                            }
+                            for (int i = 0; i < res.rel.tracks.size() && i < m_trackTable->rowCount(); ++i) {
+                                if (!res.rel.tracks[i].title.isEmpty())
+                                    m_trackTable->item(i, 1)->setText(res.rel.tracks[i].title);
+                            }
+                        }
+                        // ── GnuDB フォールバック（日本盤・演歌に強い）──
+                        else if (res.gnudb.isValid()) {
+                            m_edAlbum->setPlaceholderText("");
+                            m_edAlbum->setText(res.gnudb.album);
+                            m_edArtist->setText(res.gnudb.artist);
+                            m_edYear->setText(res.gnudb.year);
+                            for (int i = 0; i < res.gnudb.tracks.size() && i < m_trackTable->rowCount(); ++i)
+                                m_trackTable->item(i, 1)->setText(res.gnudb.tracks[i].title);
+                        }
+                        // ── iTunes フォールバック ──────────────
+                        else if (res.itunes.isValid()) {
+                            m_edAlbum->setPlaceholderText("");
+                            m_edAlbum->setText(res.itunes.album);
+                            m_edArtist->setText(res.itunes.artist);
+                            m_edYear->setText(res.itunes.year);
+                            for (int i = 0; i < res.itunes.tracks.size() && i < m_trackTable->rowCount(); ++i)
+                                m_trackTable->item(i, 1)->setText(res.itunes.tracks[i]);
+                        }
+                        // ── 全部失敗 ─────────────────────────
+                        else {
+                            m_edAlbum->setPlaceholderText("見つかりませんでした。手動で入力してください");
+                            m_edArtist->setPlaceholderText("アーティスト名を入力");
+                            m_edYear->setPlaceholderText("年");
+                        }
+
+                        m_coverArt = res.cover;
+                        if (!m_coverArt.isNull() && m_artLabel) {
+                            m_artLabel->setPixmap(m_coverArt.scaled(
+                                m_artLabel->size(),
+                                Qt::KeepAspectRatio,
+                                Qt::SmoothTransformation));
+                        } else if (m_artLabel) {
+                            m_artLabel->setText("♪");
+                        }
+                        m_nextBtn->setEnabled(true);
+                    });
+
+                    watcher->setFuture(QtConcurrent::run([infoCopy]() -> MetaResult {
+                        MbRelease       rel;
+                        GnuDbResult     gnudb;
+                        iTunesAlbumInfo itunes;
+                        QPixmap         pix;
+                        CoverArt        cover;
+
+                        // ① MusicBrainz（洋楽・クラシックに強い）
+                        rel = MusicBrainz::lookup(infoCopy);
+                        qDebug() << "[Meta] MusicBrainz:" << rel.title;
+
+                        if (!rel.title.isEmpty()) {
+                            // MusicBrainz 成功 → Cover Art Archive
+                            if (!rel.mbid.isEmpty()) {
+                                QString artUrl = QString(
+                                    "https://coverartarchive.org/release/%1/front-500")
+                                    .arg(rel.mbid);
+                                QByteArray img = MusicBrainz::httpGet(artUrl);
+                                if (!img.isEmpty()) pix.loadFromData(img);
+                            }
+                            if (pix.isNull()) {
+                                QString artUrl = cover.searchITunes(rel.artist, rel.title);
+                                if (!artUrl.isEmpty()) {
+                                    QByteArray img = MusicBrainz::httpGet(artUrl);
+                                    if (!img.isEmpty()) pix.loadFromData(img);
+                                }
+                            }
+                        } else {
+                            // ② GnuDB（freedb後継・日本盤・演歌に強い）
+                            gnudb = GnuDb::lookup(infoCopy);
+                            qDebug() << "[Meta] GnuDB:" << gnudb.album;
+
+                            if (gnudb.isValid()) {
+                                // アルバムアートはiTunesから取得
+                                itunes = cover.searchITunesFull(gnudb.artist, gnudb.album);
+                                if (itunes.isValid() && !itunes.artUrl.isEmpty()) {
+                                    QByteArray img = MusicBrainz::httpGet(itunes.artUrl);
+                                    if (!img.isEmpty()) pix.loadFromData(img);
+                                }
+                                if (pix.isNull()) {
+                                    QString artUrl = cover.searchDiscogs(gnudb.artist, gnudb.album);
+                                    if (!artUrl.isEmpty()) {
+                                        QByteArray img = MusicBrainz::httpGet(artUrl);
+                                        if (!img.isEmpty()) pix.loadFromData(img);
+                                    }
+                                }
+                            } else {
+                                // ③ iTunes Store JP（GnuDBも失敗した場合）
+                                qDebug() << "[Meta] GnuDB miss -> iTunes fallback";
+                                QString a = infoCopy.artist;
+                                QString t = infoCopy.albumTitle;
+                                itunes = cover.searchITunesFull(a, t);
+                                if (itunes.isValid() && !itunes.artUrl.isEmpty()) {
+                                    QByteArray img = MusicBrainz::httpGet(itunes.artUrl);
+                                    if (!img.isEmpty()) pix.loadFromData(img);
+                                }
+                            }
+                        }
+
+                        return { rel, gnudb, itunes, pix };
+                    }));
+                }
+            }
+        } else if (!m_cuePath->text().isEmpty()) {
+            // ── CUEファイルモード: MusicBrainzでメタデータ補完 ──
+            DiscInfo info = m_discInfo;  // Step0で既に解析済み
+            if (!info.tracks.isEmpty()) {
+                m_nextBtn->setEnabled(false);
+                m_edAlbum->setPlaceholderText("検索中...");
+
+                struct MetaResult {
+                    MbRelease rel;
+                    QPixmap         cover;
+                    iTunesAlbumInfo itunes;
+                };
+
+                auto *watcher = new QFutureWatcher<MetaResult>(this);
+                connect(watcher, &QFutureWatcher<MetaResult>::finished, this,
+                        [this, watcher]() {
+                    MetaResult res = watcher->result();
+                    watcher->deleteLater();
+
+                    m_mbRelease = res.rel;
+
+                    // ── MusicBrainz 成功 ──
+                    if (!res.rel.title.isEmpty()) {
+                        m_edAlbum->setPlaceholderText("");
+                        m_edAlbum->setText(res.rel.title);
+                        m_edArtist->setText(res.rel.artist);
+                        m_edYear->setText(res.rel.date);
+                        for (int i = 0; i < res.rel.tracks.size() && i < m_trackTable->rowCount(); ++i) {
+                            if (!res.rel.tracks[i].title.isEmpty())
+                                m_trackTable->item(i, 1)->setText(res.rel.tracks[i].title);
+                        }
+                    }
+                    // ── iTunes フォールバック ──
+                    else if (res.itunes.isValid()) {
+                        m_edAlbum->setPlaceholderText("");
+                        m_edAlbum->setText(res.itunes.album);
+                        m_edArtist->setText(res.itunes.artist);
+                        m_edYear->setText(res.itunes.year);
+                        for (int i = 0; i < res.itunes.tracks.size() && i < m_trackTable->rowCount(); ++i)
+                            m_trackTable->item(i, 1)->setText(res.itunes.tracks[i]);
+                    }
+                    // ── 両方失敗 ──
+                    else {
+                        m_edAlbum->setPlaceholderText("見つかりませんでした。手動で入力してください");
+                        m_edArtist->setPlaceholderText("アーティスト名を入力");
+                        m_edYear->setPlaceholderText("年");
+                    }
+                    m_coverArt = res.cover;
+                    if (!m_coverArt.isNull() && m_artLabel) {
+                        m_artLabel->setPixmap(m_coverArt.scaled(
+                            m_artLabel->size(),
+                            Qt::KeepAspectRatio,
+                            Qt::SmoothTransformation));
+                    } else if (m_artLabel) {
+                        m_artLabel->setText("♪");
+                    }
+                    m_nextBtn->setEnabled(true);
+                });
+
+                watcher->setFuture(QtConcurrent::run([info]() -> MetaResult {
+                    MbRelease       rel;
+                    iTunesAlbumInfo itunes;
+                    QPixmap         pix;
+                    CoverArt        cover;
+
+                    // ① MusicBrainz
+                    rel = MusicBrainz::lookup(info);
+                    qDebug() << "[Meta/CUE] MusicBrainz:" << rel.title;
+
+                    if (!rel.title.isEmpty()) {
+                        if (!rel.mbid.isEmpty()) {
+                            QString artUrl = QString(
+                                "https://coverartarchive.org/release/%1/front-500")
+                                .arg(rel.mbid);
+                            QByteArray img = MusicBrainz::httpGet(artUrl);
+                            if (!img.isEmpty()) pix.loadFromData(img);
+                        }
+                        if (pix.isNull()) {
+                            QString artUrl = cover.searchITunes(rel.artist, rel.title);
+                            if (!artUrl.isEmpty()) {
+                                QByteArray img = MusicBrainz::httpGet(artUrl);
+                                if (!img.isEmpty()) pix.loadFromData(img);
+                            }
+                        }
+                    } else {
+                        // ② iTunes Store JP（CUEのアーティスト・アルバム名を利用）
+                        qDebug() << "[Meta/CUE] MusicBrainz miss → iTunes fallback";
+                        itunes = cover.searchITunesFull(info.artist, info.albumTitle);
+                        qDebug() << "[Meta/CUE] iTunes:" << itunes.album
+                                 << "tracks:" << itunes.tracks.size();
+
+                        if (itunes.isValid() && !itunes.artUrl.isEmpty()) {
+                            QByteArray img = MusicBrainz::httpGet(itunes.artUrl);
+                            if (!img.isEmpty()) pix.loadFromData(img);
+                        }
+
+                        // ③ Discogs（最終手段）
+                        if (!itunes.isValid()) {
+                            QString artUrl = cover.searchDiscogs(info.artist, info.albumTitle);
+                            if (!artUrl.isEmpty()) {
+                                QByteArray img = MusicBrainz::httpGet(artUrl);
+                                if (!img.isEmpty()) pix.loadFromData(img);
+                            }
+                        }
+                    }
+                    return { rel, pix, itunes };
+                }));
+            }
+        }
+    } else if (step == 3) {
         // RIPページ: Nextは完了後に有効化
         m_nextBtn->setText("Next  ▶");
         m_nextBtn->setEnabled(false);
@@ -751,6 +1154,10 @@ void MainWindow::onBrowseOutput()
 
 void MainWindow::onRipClicked()
 {
+    // 編集中のセルがあれば確定させる
+    m_trackTable->clearFocus();
+    m_trackTable->setCurrentItem(nullptr);
+
     m_ripBtn->setEnabled(false);
     m_logViewer->clear();
     m_logViewer->appendLine("═══════════════════════════════════════");
@@ -761,8 +1168,8 @@ void MainWindow::onRipClicked()
     m_logViewer->appendLine("Output : " + m_outputPath->text());
     m_logViewer->appendLine("─── Track log ──────────────────────");
 
-    bool isCue = !m_cuePath->text().isEmpty() && m_discInfo.isCueMode
-                 && !m_discInfo.tracks.isEmpty();
+    // CUEモードまたは物理CDドライブモード（どちらもm_discInfoにトラック情報がある）
+    bool isCue = !m_discInfo.tracks.isEmpty();
 
     if (!isCue) {
         // DEMOモード
@@ -789,13 +1196,13 @@ void MainWindow::onRipClicked()
             m_progress->setValue(m_ripCounter * 100 / m_ripTotal);
             m_progressLabel->setText(QString("Reading  %1 / %2  sectors")
                                       .arg(m_ripCounter).arg(m_ripTotal));
-            double purity = 100.0 - (m_totalErrors * 100.0 / m_ripCounter);
+            double purity = 100.0 - ((m_totalErrors + m_totalRetries) * 100.0 / m_ripCounter);
             auto upd = [](QWidget *c, const QString &v){
                 auto l = c->findChildren<QLabel*>();
                 if (l.size()>=2) l[1]->setText(v);
             };
             upd(m_statPurity,  QString::number(purity,'f',1)+"%");
-            upd(m_statRetries, QString::number(m_totalRetries));
+            upd(m_statRetries, "—");
             upd(m_statErrors,  QString::number(m_totalErrors));
             upd(m_statSpeed,   "—");
         });
@@ -804,7 +1211,12 @@ void MainWindow::onRipClicked()
     }
 
     // ── 実RIP: RipWorker + QThread ──
-    int totalSectors = (int)m_discInfo.totalSectors;
+    // Step1（WAV書き込み）はsectorDoneを送らない
+    // Step3（FLAC変換）のみsectorDoneを送るため
+    // m_ripTotal = 各トラックの実セクタ合計
+    int totalSectors = 0;
+    for (const auto &t : m_discInfo.tracks)
+        totalSectors += (int)(t.endSector - t.startSector + 1);
     m_sectorMap->reset(totalSectors);
     m_progress->setValue(0);
     m_totalErrors = 0; m_totalRetries = 0;
@@ -816,26 +1228,51 @@ void MainWindow::onRipClicked()
     QString albumFolder = year.isEmpty()
         ? QString("%1/%2").arg(artist, album)
         : QString("%1/(%2) %3").arg(artist, year, album);
+
+    // 複数DISCの場合は Disc1/ Disc2/ サブフォルダに分ける
     QString outDir = m_outputPath->text() + "/" + albumFolder;
+    // Metadata画面のスピンボックスから直接取得（確実）
+    int discPos    = m_discNumberSpin->value();
+    int totalDiscs = m_discTotalSpin->value();
+    if (totalDiscs > 1) {
+        outDir += QString("/Disc%1").arg(discPos);
+        qDebug() << "[RIP] Multi-disc: Disc" << discPos << "of" << totalDiscs;
+    }
 
     m_logViewer->appendLine("Folder : " + outDir);
+
+    if (!m_coverArt.isNull())
+        m_logViewer->appendLine("  Track 00: Cover art: OK");
+    else
+        m_logViewer->appendLine("  Track 00: Cover art: not found");
+
+    // メタデータ画面で編集したトラック名をm_discInfoに反映
+    static QRegularExpression reDefaultTitle(R"(^Track\s+\d+$)");
+    for (int i = 0; i < m_trackTable->rowCount() && i < m_discInfo.tracks.size(); ++i) {
+        auto *item = m_trackTable->item(i, 1);
+        if (item && !item->text().isEmpty()
+            && !reDefaultTitle.match(item->text()).hasMatch()) {
+            m_discInfo.tracks[i].title = item->text();
+        }
+    }
 
     auto *worker = new RipWorker;
     auto *thread = new QThread(this);
     worker->moveToThread(thread);
-    worker->setup(&m_drive, m_discInfo, outDir, artist, album, year);
+    worker->setup(&m_drive, m_discInfo, outDir, artist, album, year, m_coverArt, QString(), discPos, totalDiscs, m_readSpeed);
 
     // セクタ完了 → セクタマップ更新
     connect(worker, &RipWorker::sectorDone, this, [this](SectorResult sr) {
         m_sectorMap->addResult(sr);
-        if (!sr.perfect) m_totalRetries += sr.retries;
+        if (!sr.perfect) m_totalRetries++;  // Slow Sectorsカウント
         if (sr.hasError)  m_totalErrors++;
         m_ripCounter++;
 
         int pct = m_ripTotal > 0 ? m_ripCounter * 100 / m_ripTotal : 0;
         m_progress->setValue(pct);
         double purity = m_ripCounter > 0
-            ? 100.0 - (m_totalErrors * 100.0 / m_ripCounter) : 100.0;
+            ? 100.0 - ((m_totalErrors + m_totalRetries) * 100.0 / m_ripCounter)
+            : 100.0;
         auto upd = [](QWidget *c, const QString &v){
             auto l = c->findChildren<QLabel*>();
             if (l.size()>=2) l[1]->setText(v);
@@ -843,7 +1280,13 @@ void MainWindow::onRipClicked()
         upd(m_statPurity,  QString::number(purity,'f',1)+"%");
         upd(m_statRetries, QString::number(m_totalRetries));
         upd(m_statErrors,  QString::number(m_totalErrors));
-        upd(m_statSpeed,   "—");
+        // Speed: KB/s → x倍速表示（1x=150KB/s）
+        QString speedStr = "—";
+        if (sr.speedKBps > 0) {
+            double x = sr.speedKBps / 150.0;
+            speedStr = QString::number(x, 'f', 1) + "x";
+        }
+        upd(m_statSpeed, speedStr);
     }, Qt::QueuedConnection);
 
     // トラック開始
@@ -876,26 +1319,62 @@ void MainWindow::onRipClicked()
     connect(thread, &QThread::finished, thread, &QThread::deleteLater);
     thread->start();
 }
-void MainWindow::onRipFinished()
+// MusicBrainz DiscID計算
+QString MainWindow::calcDiscId(const DiscInfo &info)
 {
-    double purity = 100.0 - (m_totalErrors * 100.0 / m_ripTotal);
+    if (info.tracks.isEmpty()) return {};
+
+    // DiscID = SHA1 of: firstTrack lastTrack leadoutLBA track1LBA track2LBA ...
+    int first = info.tracks.first().number;
+    int last  = info.tracks.last().number;
+
+    // オフセット計算（150セクタ = 2秒のリードイン）
+    QVector<DWORD> offsets;
+    for (auto &t : info.tracks)
+        offsets.append(t.startSector + 150);
+    DWORD leadout = info.totalSectors + 150;
+
+    // SHA1入力文字列を構築
+    QString data = QString("%1").arg(first, 2, 16, QChar('0')).toUpper();
+    data += QString("%1").arg(last, 2, 16, QChar('0')).toUpper();
+    data += QString("%1").arg(leadout, 8, 16, QChar('0')).toUpper();
+    for (int i = 0; i < 99; ++i) {
+        if (i < offsets.size())
+            data += QString("%1").arg(offsets[i], 8, 16, QChar('0')).toUpper();
+        else
+            data += "00000000";
+    }
+
+    // SHA1ハッシュ計算
+    QByteArray sha1 = QCryptographicHash::hash(
+        data.toLatin1(), QCryptographicHash::Sha1);
+
+    // Base64 URL safe エンコード
+    QString b64 = sha1.toBase64(QByteArray::Base64Encoding);
+    b64.replace('+', '.');
+    b64.replace('/', '_');
+    b64.replace('=', '-');
+    return b64;
+}
+
+void MainWindow::onRipFinished(){
+    double quality = m_ripCounter > 0
+        ? qMax(0.0, 100.0 - ((m_totalErrors + m_totalRetries) * 100.0 / m_ripCounter))
+        : 100.0;
     m_progress->setValue(100);
-    m_progressLabel->setText(QString("完了  ✦  浄化率 %1%").arg(purity,0,'f',2));
+    m_progressLabel->setText(QString("完了  ✦  Read Quality %1%").arg(quality,0,'f',2));
 
     m_logViewer->appendLine("");
-    m_logViewer->appendLine(QString("  浄化率 : %1%").arg(purity,0,'f',2));
-    m_logViewer->appendLine(QString("  エラー : %1 セクタ").arg(m_totalErrors));
-    m_logViewer->appendLine(m_totalErrors==0
-        ? "  判定   : このディスクは完全に清潔である  ✦"
-        : "  判定   : 軽微な傷を検出。補正済み  ◈");
+    m_logViewer->appendLine(QString("  Read Quality : %1%").arg(quality,0,'f',2));
+    m_logViewer->appendLine(QString("  Errors       : %1 sectors").arg(m_totalErrors));
+    m_logViewer->appendLine(QString("  Slow Sectors : %1 sectors").arg(m_totalRetries));
+    m_logViewer->appendLine((m_totalErrors + m_totalRetries) == 0
+        ? "  Result  : Perfect  ✦"
+        : "  Result  : Recovered  ◈");
     m_logViewer->appendLine("═══════════════════════════════════════");
 
     m_ripBtn->setEnabled(false);
     m_nextBtn->setEnabled(true);
-    // 2秒後に自動でVerifyへ進む
-    QTimer::singleShot(2000, this, [this]() {
-        goToStep(4);
-    });
 }
 
 void MainWindow::startVerify()
@@ -952,15 +1431,6 @@ void MainWindow::startVerify()
     t->start(20);
 }
 
-void MainWindow::onMetadataReady(QVector<MbRelease> releases)
-{
-    if (releases.isEmpty()) return;
-    auto &r = releases.first();
-    m_edAlbum->setText(r.title);
-    m_edArtist->setText(r.artist);
-    m_edYear->setText(r.date.left(4));
-}
-
 void MainWindow::onSettingsClicked()
 {
     auto *dlg = new QDialog(this);
@@ -998,6 +1468,25 @@ void MainWindow::onSettingsClicked()
     rgl->addWidget(maxRetriesLabel, 0, 0);
     rgl->addWidget(maxRetriesSpin,  0, 1);
 
+    // リッピング速度
+    auto *speedLabel = new QLabel("Read speed");
+    speedLabel->setObjectName("formLabel");
+    auto *speedCombo = new QComboBox;
+    speedCombo->setObjectName("driveCombo");
+    speedCombo->addItem("2x  ── High Fidelity（推奨）", CdDrive::SPEED_2X);
+    speedCombo->addItem("4x",                           CdDrive::SPEED_4X);
+    speedCombo->addItem("8x",                           CdDrive::SPEED_8X);
+    speedCombo->addItem("16x",                          CdDrive::SPEED_16X);
+    // 現在の設定を反映
+    for (int i = 0; i < speedCombo->count(); ++i) {
+        if (speedCombo->itemData(i).toInt() == m_readSpeed) {
+            speedCombo->setCurrentIndex(i);
+            break;
+        }
+    }
+    rgl->addWidget(speedLabel, 1, 0);
+    rgl->addWidget(speedCombo, 1, 1);
+
     auto *offsetLabel = new QLabel("Sample offset");
     offsetLabel->setObjectName("formLabel");
     auto *offsetSpin = new QSpinBox;
@@ -1005,8 +1494,8 @@ void MainWindow::onSettingsClicked()
     offsetSpin->setValue(30);
     offsetSpin->setObjectName("settingsSpin");
     offsetSpin->setSuffix(" samples");
-    rgl->addWidget(offsetLabel, 1, 0);
-    rgl->addWidget(offsetSpin,  1, 1);
+    rgl->addWidget(offsetLabel, 2, 0);
+    rgl->addWidget(offsetSpin,  2, 1);
     vl->addWidget(ripGroup);
 
     // 出力設定
@@ -1046,15 +1535,6 @@ void MainWindow::onSettingsClicked()
     ogl->addWidget(noteLabel, 2, 1);
     vl->addWidget(outGroup);
 
-    // AccurateRip
-    auto *arGroup = new QGroupBox("AccurateRip");
-    arGroup->setObjectName("sourceGroup");
-    auto *agl = new QVBoxLayout(arGroup);
-    auto *arCheck = new QCheckBox("Auto verify after ripping");
-    arCheck->setObjectName("settingsCheck");
-    arCheck->setChecked(true);
-    agl->addWidget(arCheck);
-    vl->addWidget(arGroup);
     vl->addStretch();
     tabs->addTab(settingsPage, "Settings");
 
@@ -1140,7 +1620,11 @@ void MainWindow::onSettingsClicked()
     btnRow->addWidget(okBtn);
     mainVl->addWidget(btnBar);
 
-    connect(okBtn,  &QPushButton::clicked, dlg, &QDialog::accept);
+    connect(okBtn,  &QPushButton::clicked, dlg, [=]() {
+        m_readSpeed = speedCombo->currentData().toInt();
+        qDebug() << "[Settings] Read speed saved:" << m_readSpeed << "KB/s";
+        dlg->accept();
+    });
     connect(canBtn, &QPushButton::clicked, dlg, &QDialog::reject);
 
     dlg->setStyleSheet(styleSheet() + R"(
