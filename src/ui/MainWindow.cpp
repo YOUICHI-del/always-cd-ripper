@@ -303,7 +303,6 @@ QWidget *MainWindow::buildStep0_Source()
         "High Accuracy Mode (Recommended)\n"
         "  · Max 20 retries per sector\n"
         "  · Majority voting for data integrity\n"
-        "  · C2 error detection"
     );
     noteLabel->setObjectName("previewLabel");
     ngl->addWidget(noteLabel);
