@@ -486,7 +486,7 @@
 	"MOC_COMPILATION_FILE" : "C:/Users/jokun/Downloads/AlwaysCDRipper2/out/build/x64-Release/AlwaysCDRipper_autogen/mocs_compilation.cpp",
 	"MOC_DEFINITIONS" : 
 	[
-		"BUILD_NUMBER=\"20260531-0517\"",
+		"BUILD_NUMBER=\"20260531-0633\"",
 		"QT_CONCURRENT_LIB",
 		"QT_CORE_LIB",
 		"QT_GUI_LIB",

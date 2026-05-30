@@ -268,6 +268,30 @@ QWidget *MainWindow::buildStep0_Source()
     });
     vl->addWidget(cueGroup);
 
+    // WAVファイル選択
+    auto *wavGroup = new QGroupBox("WAV File  ( CD drive not required )");
+    wavGroup->setObjectName("sourceGroup");
+    auto *wavg = new QHBoxLayout(wavGroup);
+    m_wavPath = new QLineEdit;
+    m_wavPath->setObjectName("pathEdit");
+    m_wavPath->setPlaceholderText("Select .wav file...");
+    auto *wavBtn = new QPushButton("Browse...");
+    wavBtn->setObjectName("browseBtn");
+    wavBtn->setFixedWidth(90);
+    wavg->addWidget(m_wavPath, 1);
+    wavg->addWidget(wavBtn);
+    connect(wavBtn, &QPushButton::clicked, this, [this]() {
+        QString path = QFileDialog::getOpenFileName(
+            this, "Select WAV file", "",
+            "WAV Audio (*.wav)");
+        if (!path.isEmpty()) {
+            m_wavPath->setText(path);
+            m_driveCombo->setCurrentIndex(-1);
+            m_cuePath->clear();
+        }
+    });
+    vl->addWidget(wavGroup);
+
     connect(m_driveCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, [](int){});
 
@@ -295,6 +319,9 @@ QWidget *MainWindow::buildStep0_Source()
 
         // CUEパスをクリア
         m_cuePath->clear();
+
+        // WAVパスをクリア
+        m_wavPath->clear();
 
         // メタデータをクリア
         m_edAlbum->clear();
@@ -1587,7 +1614,7 @@ void MainWindow::onSettingsClicked()
         "Always CD Ripper  +  Always Player\n"
         "= Complete CD Rescue\n\n"
         "CUE/BIN/WAV input\n"
-        "FLAC output with full tags\n"
+        "FLAC & WAV output with full tags\n"
         "MusicBrainz metadata\n"
         "iTunes cover art"
     );

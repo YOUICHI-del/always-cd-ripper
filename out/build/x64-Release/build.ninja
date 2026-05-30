@@ -51,7 +51,7 @@ build cmake_object_order_depends_target_AlwaysCDRipper: phony || AlwaysCDRipper_
 
 build CMakeFiles\AlwaysCDRipper.dir\AlwaysCDRipper_autogen\mocs_compilation.cpp.obj: CXX_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\mocs_compilation.cpp || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD -Zc:__cplusplus -permissive- -utf-8
   INCLUDES = -IC:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -IC:\Users\jokun\Downloads\AlwaysCDRipper2\src -external:IC:\Qt\6.11.0\msvc2022_64\include\QtCore -external:IC:\Qt\6.11.0\msvc2022_64\include -external:IC:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -external:IC:\Qt\6.11.0\msvc2022_64\include\QtGui -external:IC:\Qt\6.11.0\msvc2022_64\include\QtWidgets -external:IC:\Qt\6.11.0\msvc2022_64\include\QtNetwork -external:IC:\vcpkg\installed\x64-windows\include -external:IC:\vcpkg\installed\x64-windows\include\taglib -external:IC:\Qt\6.11.0\msvc2022_64\include\QtConcurrent -external:W0
   OBJECT_DIR = CMakeFiles\AlwaysCDRipper.dir
@@ -62,7 +62,7 @@ build CMakeFiles\AlwaysCDRipper.dir\AlwaysCDRipper_autogen\mocs_compilation.cpp.
 
 build CMakeFiles\AlwaysCDRipper.dir\src\main.cpp.obj: CXX_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\src\main.cpp || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD -Zc:__cplusplus -permissive- -utf-8
   INCLUDES = -IC:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -IC:\Users\jokun\Downloads\AlwaysCDRipper2\src -external:IC:\Qt\6.11.0\msvc2022_64\include\QtCore -external:IC:\Qt\6.11.0\msvc2022_64\include -external:IC:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -external:IC:\Qt\6.11.0\msvc2022_64\include\QtGui -external:IC:\Qt\6.11.0\msvc2022_64\include\QtWidgets -external:IC:\Qt\6.11.0\msvc2022_64\include\QtNetwork -external:IC:\vcpkg\installed\x64-windows\include -external:IC:\vcpkg\installed\x64-windows\include\taglib -external:IC:\Qt\6.11.0\msvc2022_64\include\QtConcurrent -external:W0
   OBJECT_DIR = CMakeFiles\AlwaysCDRipper.dir
@@ -73,7 +73,7 @@ build CMakeFiles\AlwaysCDRipper.dir\src\main.cpp.obj: CXX_COMPILER__AlwaysCDRipp
 
 build CMakeFiles\AlwaysCDRipper.dir\src\ripper\CdDrive.cpp.obj: CXX_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\src\ripper\CdDrive.cpp || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD -Zc:__cplusplus -permissive- -utf-8
   INCLUDES = -IC:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -IC:\Users\jokun\Downloads\AlwaysCDRipper2\src -external:IC:\Qt\6.11.0\msvc2022_64\include\QtCore -external:IC:\Qt\6.11.0\msvc2022_64\include -external:IC:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -external:IC:\Qt\6.11.0\msvc2022_64\include\QtGui -external:IC:\Qt\6.11.0\msvc2022_64\include\QtWidgets -external:IC:\Qt\6.11.0\msvc2022_64\include\QtNetwork -external:IC:\vcpkg\installed\x64-windows\include -external:IC:\vcpkg\installed\x64-windows\include\taglib -external:IC:\Qt\6.11.0\msvc2022_64\include\QtConcurrent -external:W0
   OBJECT_DIR = CMakeFiles\AlwaysCDRipper.dir
@@ -84,7 +84,7 @@ build CMakeFiles\AlwaysCDRipper.dir\src\ripper\CdDrive.cpp.obj: CXX_COMPILER__Al
 
 build CMakeFiles\AlwaysCDRipper.dir\src\ripper\ParanoiaReader.cpp.obj: CXX_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\src\ripper\ParanoiaReader.cpp || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD -Zc:__cplusplus -permissive- -utf-8
   INCLUDES = -IC:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -IC:\Users\jokun\Downloads\AlwaysCDRipper2\src -external:IC:\Qt\6.11.0\msvc2022_64\include\QtCore -external:IC:\Qt\6.11.0\msvc2022_64\include -external:IC:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -external:IC:\Qt\6.11.0\msvc2022_64\include\QtGui -external:IC:\Qt\6.11.0\msvc2022_64\include\QtWidgets -external:IC:\Qt\6.11.0\msvc2022_64\include\QtNetwork -external:IC:\vcpkg\installed\x64-windows\include -external:IC:\vcpkg\installed\x64-windows\include\taglib -external:IC:\Qt\6.11.0\msvc2022_64\include\QtConcurrent -external:W0
   OBJECT_DIR = CMakeFiles\AlwaysCDRipper.dir
@@ -95,7 +95,7 @@ build CMakeFiles\AlwaysCDRipper.dir\src\ripper\ParanoiaReader.cpp.obj: CXX_COMPI
 
 build CMakeFiles\AlwaysCDRipper.dir\src\ripper\FlacEncoder.cpp.obj: CXX_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\src\ripper\FlacEncoder.cpp || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD -Zc:__cplusplus -permissive- -utf-8
   INCLUDES = -IC:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -IC:\Users\jokun\Downloads\AlwaysCDRipper2\src -external:IC:\Qt\6.11.0\msvc2022_64\include\QtCore -external:IC:\Qt\6.11.0\msvc2022_64\include -external:IC:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -external:IC:\Qt\6.11.0\msvc2022_64\include\QtGui -external:IC:\Qt\6.11.0\msvc2022_64\include\QtWidgets -external:IC:\Qt\6.11.0\msvc2022_64\include\QtNetwork -external:IC:\vcpkg\installed\x64-windows\include -external:IC:\vcpkg\installed\x64-windows\include\taglib -external:IC:\Qt\6.11.0\msvc2022_64\include\QtConcurrent -external:W0
   OBJECT_DIR = CMakeFiles\AlwaysCDRipper.dir
@@ -106,7 +106,7 @@ build CMakeFiles\AlwaysCDRipper.dir\src\ripper\FlacEncoder.cpp.obj: CXX_COMPILER
 
 build CMakeFiles\AlwaysCDRipper.dir\src\ripper\RipWorker.cpp.obj: CXX_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\src\ripper\RipWorker.cpp || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD -Zc:__cplusplus -permissive- -utf-8
   INCLUDES = -IC:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -IC:\Users\jokun\Downloads\AlwaysCDRipper2\src -external:IC:\Qt\6.11.0\msvc2022_64\include\QtCore -external:IC:\Qt\6.11.0\msvc2022_64\include -external:IC:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -external:IC:\Qt\6.11.0\msvc2022_64\include\QtGui -external:IC:\Qt\6.11.0\msvc2022_64\include\QtWidgets -external:IC:\Qt\6.11.0\msvc2022_64\include\QtNetwork -external:IC:\vcpkg\installed\x64-windows\include -external:IC:\vcpkg\installed\x64-windows\include\taglib -external:IC:\Qt\6.11.0\msvc2022_64\include\QtConcurrent -external:W0
   OBJECT_DIR = CMakeFiles\AlwaysCDRipper.dir
@@ -117,7 +117,7 @@ build CMakeFiles\AlwaysCDRipper.dir\src\ripper\RipWorker.cpp.obj: CXX_COMPILER__
 
 build CMakeFiles\AlwaysCDRipper.dir\src\metadata\MusicBrainz.cpp.obj: CXX_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\src\metadata\MusicBrainz.cpp || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD -Zc:__cplusplus -permissive- -utf-8
   INCLUDES = -IC:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -IC:\Users\jokun\Downloads\AlwaysCDRipper2\src -external:IC:\Qt\6.11.0\msvc2022_64\include\QtCore -external:IC:\Qt\6.11.0\msvc2022_64\include -external:IC:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -external:IC:\Qt\6.11.0\msvc2022_64\include\QtGui -external:IC:\Qt\6.11.0\msvc2022_64\include\QtWidgets -external:IC:\Qt\6.11.0\msvc2022_64\include\QtNetwork -external:IC:\vcpkg\installed\x64-windows\include -external:IC:\vcpkg\installed\x64-windows\include\taglib -external:IC:\Qt\6.11.0\msvc2022_64\include\QtConcurrent -external:W0
   OBJECT_DIR = CMakeFiles\AlwaysCDRipper.dir
@@ -128,7 +128,7 @@ build CMakeFiles\AlwaysCDRipper.dir\src\metadata\MusicBrainz.cpp.obj: CXX_COMPIL
 
 build CMakeFiles\AlwaysCDRipper.dir\src\metadata\GnuDb.cpp.obj: CXX_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\src\metadata\GnuDb.cpp || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD -Zc:__cplusplus -permissive- -utf-8
   INCLUDES = -IC:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -IC:\Users\jokun\Downloads\AlwaysCDRipper2\src -external:IC:\Qt\6.11.0\msvc2022_64\include\QtCore -external:IC:\Qt\6.11.0\msvc2022_64\include -external:IC:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -external:IC:\Qt\6.11.0\msvc2022_64\include\QtGui -external:IC:\Qt\6.11.0\msvc2022_64\include\QtWidgets -external:IC:\Qt\6.11.0\msvc2022_64\include\QtNetwork -external:IC:\vcpkg\installed\x64-windows\include -external:IC:\vcpkg\installed\x64-windows\include\taglib -external:IC:\Qt\6.11.0\msvc2022_64\include\QtConcurrent -external:W0
   OBJECT_DIR = CMakeFiles\AlwaysCDRipper.dir
@@ -139,7 +139,7 @@ build CMakeFiles\AlwaysCDRipper.dir\src\metadata\GnuDb.cpp.obj: CXX_COMPILER__Al
 
 build CMakeFiles\AlwaysCDRipper.dir\src\metadata\CoverArt.cpp.obj: CXX_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\src\metadata\CoverArt.cpp || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD -Zc:__cplusplus -permissive- -utf-8
   INCLUDES = -IC:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -IC:\Users\jokun\Downloads\AlwaysCDRipper2\src -external:IC:\Qt\6.11.0\msvc2022_64\include\QtCore -external:IC:\Qt\6.11.0\msvc2022_64\include -external:IC:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -external:IC:\Qt\6.11.0\msvc2022_64\include\QtGui -external:IC:\Qt\6.11.0\msvc2022_64\include\QtWidgets -external:IC:\Qt\6.11.0\msvc2022_64\include\QtNetwork -external:IC:\vcpkg\installed\x64-windows\include -external:IC:\vcpkg\installed\x64-windows\include\taglib -external:IC:\Qt\6.11.0\msvc2022_64\include\QtConcurrent -external:W0
   OBJECT_DIR = CMakeFiles\AlwaysCDRipper.dir
@@ -150,7 +150,7 @@ build CMakeFiles\AlwaysCDRipper.dir\src\metadata\CoverArt.cpp.obj: CXX_COMPILER_
 
 build CMakeFiles\AlwaysCDRipper.dir\src\metadata\TagWriter.cpp.obj: CXX_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\src\metadata\TagWriter.cpp || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD -Zc:__cplusplus -permissive- -utf-8
   INCLUDES = -IC:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -IC:\Users\jokun\Downloads\AlwaysCDRipper2\src -external:IC:\Qt\6.11.0\msvc2022_64\include\QtCore -external:IC:\Qt\6.11.0\msvc2022_64\include -external:IC:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -external:IC:\Qt\6.11.0\msvc2022_64\include\QtGui -external:IC:\Qt\6.11.0\msvc2022_64\include\QtWidgets -external:IC:\Qt\6.11.0\msvc2022_64\include\QtNetwork -external:IC:\vcpkg\installed\x64-windows\include -external:IC:\vcpkg\installed\x64-windows\include\taglib -external:IC:\Qt\6.11.0\msvc2022_64\include\QtConcurrent -external:W0
   OBJECT_DIR = CMakeFiles\AlwaysCDRipper.dir
@@ -161,7 +161,7 @@ build CMakeFiles\AlwaysCDRipper.dir\src\metadata\TagWriter.cpp.obj: CXX_COMPILER
 
 build CMakeFiles\AlwaysCDRipper.dir\src\ui\MainWindow.cpp.obj: CXX_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\src\ui\MainWindow.cpp || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD -Zc:__cplusplus -permissive- -utf-8
   INCLUDES = -IC:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -IC:\Users\jokun\Downloads\AlwaysCDRipper2\src -external:IC:\Qt\6.11.0\msvc2022_64\include\QtCore -external:IC:\Qt\6.11.0\msvc2022_64\include -external:IC:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -external:IC:\Qt\6.11.0\msvc2022_64\include\QtGui -external:IC:\Qt\6.11.0\msvc2022_64\include\QtWidgets -external:IC:\Qt\6.11.0\msvc2022_64\include\QtNetwork -external:IC:\vcpkg\installed\x64-windows\include -external:IC:\vcpkg\installed\x64-windows\include\taglib -external:IC:\Qt\6.11.0\msvc2022_64\include\QtConcurrent -external:W0
   OBJECT_DIR = CMakeFiles\AlwaysCDRipper.dir
@@ -172,7 +172,7 @@ build CMakeFiles\AlwaysCDRipper.dir\src\ui\MainWindow.cpp.obj: CXX_COMPILER__Alw
 
 build CMakeFiles\AlwaysCDRipper.dir\src\ui\SectorMap.cpp.obj: CXX_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\src\ui\SectorMap.cpp || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD -Zc:__cplusplus -permissive- -utf-8
   INCLUDES = -IC:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -IC:\Users\jokun\Downloads\AlwaysCDRipper2\src -external:IC:\Qt\6.11.0\msvc2022_64\include\QtCore -external:IC:\Qt\6.11.0\msvc2022_64\include -external:IC:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -external:IC:\Qt\6.11.0\msvc2022_64\include\QtGui -external:IC:\Qt\6.11.0\msvc2022_64\include\QtWidgets -external:IC:\Qt\6.11.0\msvc2022_64\include\QtNetwork -external:IC:\vcpkg\installed\x64-windows\include -external:IC:\vcpkg\installed\x64-windows\include\taglib -external:IC:\Qt\6.11.0\msvc2022_64\include\QtConcurrent -external:W0
   OBJECT_DIR = CMakeFiles\AlwaysCDRipper.dir
@@ -183,7 +183,7 @@ build CMakeFiles\AlwaysCDRipper.dir\src\ui\SectorMap.cpp.obj: CXX_COMPILER__Alwa
 
 build CMakeFiles\AlwaysCDRipper.dir\src\ui\MetadataEditor.cpp.obj: CXX_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\src\ui\MetadataEditor.cpp || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD -Zc:__cplusplus -permissive- -utf-8
   INCLUDES = -IC:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -IC:\Users\jokun\Downloads\AlwaysCDRipper2\src -external:IC:\Qt\6.11.0\msvc2022_64\include\QtCore -external:IC:\Qt\6.11.0\msvc2022_64\include -external:IC:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -external:IC:\Qt\6.11.0\msvc2022_64\include\QtGui -external:IC:\Qt\6.11.0\msvc2022_64\include\QtWidgets -external:IC:\Qt\6.11.0\msvc2022_64\include\QtNetwork -external:IC:\vcpkg\installed\x64-windows\include -external:IC:\vcpkg\installed\x64-windows\include\taglib -external:IC:\Qt\6.11.0\msvc2022_64\include\QtConcurrent -external:W0
   OBJECT_DIR = CMakeFiles\AlwaysCDRipper.dir
@@ -194,7 +194,7 @@ build CMakeFiles\AlwaysCDRipper.dir\src\ui\MetadataEditor.cpp.obj: CXX_COMPILER_
 
 build CMakeFiles\AlwaysCDRipper.dir\src\ui\LogViewer.cpp.obj: CXX_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\src\ui\LogViewer.cpp || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD -Zc:__cplusplus -permissive- -utf-8
   INCLUDES = -IC:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -IC:\Users\jokun\Downloads\AlwaysCDRipper2\src -external:IC:\Qt\6.11.0\msvc2022_64\include\QtCore -external:IC:\Qt\6.11.0\msvc2022_64\include -external:IC:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -external:IC:\Qt\6.11.0\msvc2022_64\include\QtGui -external:IC:\Qt\6.11.0\msvc2022_64\include\QtWidgets -external:IC:\Qt\6.11.0\msvc2022_64\include\QtNetwork -external:IC:\vcpkg\installed\x64-windows\include -external:IC:\vcpkg\installed\x64-windows\include\taglib -external:IC:\Qt\6.11.0\msvc2022_64\include\QtConcurrent -external:W0
   OBJECT_DIR = CMakeFiles\AlwaysCDRipper.dir
@@ -205,7 +205,7 @@ build CMakeFiles\AlwaysCDRipper.dir\src\ui\LogViewer.cpp.obj: CXX_COMPILER__Alwa
 
 build CMakeFiles\AlwaysCDRipper.dir\resources\app.rc.res: RC_COMPILER__AlwaysCDRipper_unscanned_Release C$:\Users\jokun\Downloads\AlwaysCDRipper2\resources\app.rc || cmake_object_order_depends_target_AlwaysCDRipper
   CONFIG = Release
-  DEFINES = -DBUILD_NUMBER=\"20260531-0517\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEFINES = -DBUILD_NUMBER=\"20260531-0633\" -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   DEP_FILE = CMakeFiles\AlwaysCDRipper.dir\resources\app.rc.res.d
   FLAGS = -DWIN32
   INCLUDES = -I C:\Users\jokun\Downloads\AlwaysCDRipper2\out\build\x64-Release\AlwaysCDRipper_autogen\include -I C:\Users\jokun\Downloads\AlwaysCDRipper2\src -I C:\Qt\6.11.0\msvc2022_64\include\QtCore -I C:\Qt\6.11.0\msvc2022_64\include -I C:\Qt\6.11.0\msvc2022_64\mkspecs\win32-msvc -I C:\Qt\6.11.0\msvc2022_64\include\QtGui -I C:\Qt\6.11.0\msvc2022_64\include\QtWidgets -I C:\Qt\6.11.0\msvc2022_64\include\QtNetwork -I C:\vcpkg\installed\x64-windows\include -I C:\vcpkg\installed\x64-windows\include\taglib -I C:\Qt\6.11.0\msvc2022_64\include\QtConcurrent

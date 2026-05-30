@@ -73,6 +73,7 @@ private:
     // Step0: ソース選択
     QComboBox   *m_driveCombo     = nullptr;
     QLineEdit   *m_cuePath        = nullptr;
+    QLineEdit   *m_wavPath        = nullptr;
 
     // Step1: 出力設定
     QLineEdit   *m_outputPath   = nullptr;
