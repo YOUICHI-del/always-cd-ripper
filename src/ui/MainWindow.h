@@ -16,6 +16,15 @@
 #include "../ripper/FlacEncoder.h"
 #include "../ripper/RipWorker.h"
 #include "../metadata/MusicBrainz.h"
+#include "../metadata/GnuDb.h"
+#include "../metadata/CoverArt.h"
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QCryptographicHash>
 #include "SectorMap.h"
 #include "LogViewer.h"
 
@@ -33,7 +42,6 @@ private slots:
     void onRipFinished();
     void onBrowseOutput();
     void onSettingsClicked();
-    void onMetadataReady(QVector<MbRelease> releases);
 
 private:
     void setupUi();
@@ -41,6 +49,7 @@ private:
     void goToStep(int step);
     void updateStepIndicator();
     void startVerify();
+    QString calcDiscId(const DiscInfo &info);
 
     // ページビルダー
     QWidget *buildStep0_Source();
@@ -64,9 +73,6 @@ private:
     // Step0: ソース選択
     QComboBox   *m_driveCombo     = nullptr;
     QLineEdit   *m_cuePath        = nullptr;
-    QLabel      *m_driveModel     = nullptr;
-    QLabel      *m_driveOffset    = nullptr;
-    QLabel      *m_driveStatus    = nullptr;
 
     // Step1: 出力設定
     QLineEdit   *m_outputPath   = nullptr;
@@ -77,6 +83,8 @@ private:
     QLineEdit   *m_edAlbum      = nullptr;
     QLineEdit   *m_edArtist     = nullptr;
     QLineEdit   *m_edYear       = nullptr;
+    QSpinBox    *m_discNumberSpin = nullptr;
+    QSpinBox    *m_discTotalSpin  = nullptr;
     QTableWidget *m_trackTable  = nullptr;
 
     // Step3: RIP
@@ -97,11 +105,14 @@ private:
     QTableWidget *m_verifyTable    = nullptr;
 
     // コア
+    CoverArt         m_cover;
     CdDrive          m_drive;
     DiscInfo         m_discInfo;
+    MbRelease        m_mbRelease;   // 複数DISC情報保持用
+    QNetworkAccessManager *m_nam = nullptr;
+    QPixmap          m_coverArt;
     ParanoiaReader  *m_reader    = nullptr;
     FlacEncoder      m_encoder;
-    MusicBrainz     *m_mb        = nullptr;
 
     // ダミーRIP用
     QTimer *m_ripTimer     = nullptr;
@@ -109,6 +120,9 @@ private:
     int     m_ripTotal     = 0;
     int     m_totalErrors  = 0;
     int     m_totalRetries = 0;
+
+    // リッピング速度（KB/s）デフォルト2x
+    int     m_readSpeed    = CdDrive::SPEED_2X;
 
     QWidget *buildStatCard(const QString &label, const QString &value);
 };

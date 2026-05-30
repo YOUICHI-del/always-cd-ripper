@@ -1,0 +1,26 @@
+# ninja log v6
+44	84	8002392095996198	CMakeFiles/clean.additional	7e2d3095c18fac32
+46	864	8002392131566460	AlwaysCDRipper_autogen/timestamp	6e50d2abdbf02945
+46	864	8002392131566460	AlwaysCDRipper_autogen/mocs_compilation.cpp	6e50d2abdbf02945
+84	109	8002392096386192	clean	24159c6342645298
+46	864	8002392131566460	C:/Users/jokun/Downloads/AlwaysCDRipper2/out/build/x64-Debug/AlwaysCDRipper_autogen/timestamp	6e50d2abdbf02945
+894	5958	8002392132376285	CMakeFiles/AlwaysCDRipper.dir/src/ripper/FlacEncoder.cpp.obj	15c60d4c02f2ce1c
+46	864	8002392131566460	C:/Users/jokun/Downloads/AlwaysCDRipper2/out/build/x64-Debug/AlwaysCDRipper_autogen/mocs_compilation.cpp	6e50d2abdbf02945
+963	1158	8002392133066287	CMakeFiles/AlwaysCDRipper.dir/resources/app.rc.res	a2a563e2827db356
+956	6721	8002392132996284	CMakeFiles/AlwaysCDRipper.dir/src/ui/LogViewer.cpp.obj	a86fa99529b324b4
+9580	10351	8002392219240721	AlwaysCDRipper.exe	55eaef48956e1a67
+925	6315	8002392132686284	CMakeFiles/AlwaysCDRipper.dir/src/metadata/TagWriter.cpp.obj	3186a6b7d64be25c
+885	6646	8002392132296304	CMakeFiles/AlwaysCDRipper.dir/src/ripper/ParanoiaReader.cpp.obj	b385015fa057702f
+879	7049	8002392132226287	CMakeFiles/AlwaysCDRipper.dir/src/ripper/CdDrive.cpp.obj	d3087d46114c8a23
+916	7429	8002392132596279	CMakeFiles/AlwaysCDRipper.dir/src/metadata/CoverArt.cpp.obj	d56e43dac761020d
+908	7096	8002392132526293	CMakeFiles/AlwaysCDRipper.dir/src/metadata/MusicBrainz.cpp.obj	961000e1aff9ce0b
+941	7083	8002392132846285	CMakeFiles/AlwaysCDRipper.dir/src/ui/SectorMap.cpp.obj	c934324a3108536e
+872	8198	8002392132166286	CMakeFiles/AlwaysCDRipper.dir/src/main.cpp.obj	1b7f1f6fef3b20cb
+901	7111	8002392132456328	CMakeFiles/AlwaysCDRipper.dir/src/ripper/RipWorker.cpp.obj	c335b8d04c94d001
+948	7572	8002392132926302	CMakeFiles/AlwaysCDRipper.dir/src/ui/MetadataEditor.cpp.obj	7673cc47cd016382
+866	8266	8002392132096295	CMakeFiles/AlwaysCDRipper.dir/AlwaysCDRipper_autogen/mocs_compilation.cpp.obj	bc23d469209a3cec
+932	9575	8002392132756299	CMakeFiles/AlwaysCDRipper.dir/src/ui/MainWindow.cpp.obj	874a727793456bdf
+44	4663	8002407722024442	build.ninja	36201de4a62c428e
+44	4663	8002407722024442	C:/Users/jokun/Downloads/AlwaysCDRipper2/out/build/x64-Debug/cmake_install.cmake	36201de4a62c428e
+50	91	8002407729420968	CMakeFiles/clean.additional	7e2d3095c18fac32
+91	119	8002407729829000	clean	7528c30def2d9691

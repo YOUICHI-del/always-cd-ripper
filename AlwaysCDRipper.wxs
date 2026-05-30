@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <Product Id="*"
+           Name="Always CD Ripper"
+           Language="1041"
+           Codepage="932"
+           Version="1.0.0"
+           Manufacturer="YOUICHI SAIJO"
+           UpgradeCode="A1B2C3D4-E5F6-7890-ABCD-EF1234567890">
+
+    <Package InstallerVersion="301"
+             Compressed="yes"
+             InstallScope="perUser"
+             Languages="1041"
+             SummaryCodepage="932"
+             Description="Always CD Ripper v1.0.0"
+             Manufacturer="YOUICHI SAIJO" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="LocalAppDataFolder">
+        <Directory Id="INSTALLFOLDER" Name="AlwaysCDRipper">
+          <Component Id="RemoveInstallFolder" Guid="6DC8BEE7-1346-4E85-B7E6-D3DF93994C91">
+            <RemoveFolder Id="RemoveINSTALLFOLDER" On="uninstall" />
+            <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+          </Component>
+          <Directory Id="PlatformsDir" Name="platforms">
+            <Component Id="RemovePlatformsDir" Guid="E3D19A22-7D8D-472B-A864-00B1C43C7DFB">
+              <RemoveFolder Id="RemovePLATFORMSDIR" On="uninstall" />
+              <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="platforms" Type="integer" Value="1" KeyPath="yes" />
+            </Component>
+          </Directory>
+          <Directory Id="StylesDir" Name="styles">
+            <Component Id="RemoveStylesDir" Guid="3FE92861-4F59-43C6-AC21-E99B4D6EE832">
+              <RemoveFolder Id="RemoveSTYLESDIR" On="uninstall" />
+              <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="styles" Type="integer" Value="1" KeyPath="yes" />
+            </Component>
+          </Directory>
+          <Directory Id="TlsDir" Name="tls">
+            <Component Id="RemoveTlsDir" Guid="7044167D-B205-49DC-A7EF-D4AD7447FE14">
+              <RemoveFolder Id="RemoveTLSDIR" On="uninstall" />
+              <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="tls" Type="integer" Value="1" KeyPath="yes" />
+            </Component>
+          </Directory>
+          <Directory Id="NetInfoDir" Name="networkinformation">
+            <Component Id="RemoveNetInfoDir" Guid="47019D6A-AB6C-4D84-9E17-6C39C16993DD">
+              <RemoveFolder Id="RemoveNETINFODIR" On="uninstall" />
+              <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="netinfo" Type="integer" Value="1" KeyPath="yes" />
+            </Component>
+          </Directory>
+          <Directory Id="IconEnginesDir" Name="iconengines">
+            <Component Id="RemoveIconEnginesDir" Guid="0570A93E-E590-4ACC-9A32-AC18EB64DD23">
+              <RemoveFolder Id="RemoveICONENGINESDIR" On="uninstall" />
+              <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="iconengines" Type="integer" Value="1" KeyPath="yes" />
+            </Component>
+          </Directory>
+          <Directory Id="ImageFormatsDir" Name="imageformats">
+            <Component Id="RemoveImageFormatsDir" Guid="57082B05-EAFC-4664-9548-758705F5043A">
+              <RemoveFolder Id="RemoveIMAGEFORMATSDIR" On="uninstall" />
+              <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="imageformats" Type="integer" Value="1" KeyPath="yes" />
+            </Component>
+          </Directory>
+          <Directory Id="GenericDir" Name="generic">
+            <Component Id="RemoveGenericDir" Guid="938D5C13-E2E7-438E-806A-85332B07E308">
+              <RemoveFolder Id="RemoveGENERICDIR" On="uninstall" />
+              <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="generic" Type="integer" Value="1" KeyPath="yes" />
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="Always CD Ripper" />
+      </Directory>
+      <Directory Id="DesktopFolder" Name="Desktop" />
+    </Directory>
+
+    <!-- ===== メインEXE ===== -->
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Component Id="MainExe" Guid="A24B18B5-9B1D-453D-ADD4-52DFC4D548E4">
+        <File Id="AlwaysCDRipperExe" Source="out\build\x64-Release\AlwaysCDRipper.exe" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="MainExe" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <!-- deploy フォルダのDLL -->
+      <Component Id="DllQtCore" Guid="00FFD11C-BC02-47F2-930E-7B40CD87DD35">
+        <File Source="deploy\Qt6Core.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllQtCore" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="DllQtGui" Guid="C7D59CBA-72B0-4703-8996-DF070E016099">
+        <File Source="deploy\Qt6Gui.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllQtGui" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="DllQtWidgets" Guid="A48F2888-BBE5-4E24-A9FC-D4FE1B569ED3">
+        <File Source="deploy\Qt6Widgets.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllQtWidgets" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="DllQtNetwork" Guid="C504FADB-7ED6-4ED1-BA16-2FF868CE415B">
+        <File Source="deploy\Qt6Network.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllQtNetwork" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="DllQtSvg" Guid="F91DF840-E3E2-472D-B32E-042D92C05EBC">
+        <File Source="deploy\Qt6Svg.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllQtSvg" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="DllD3D" Guid="14F110DB-FF95-4827-A874-E29C1088BF87">
+        <File Source="deploy\D3Dcompiler_47.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllD3D" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="DllIcu" Guid="F8C3F3D1-5401-490D-B0CC-AF83F8E25D54">
+        <File Source="deploy\icuuc.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllIcu" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="DllOpenGL" Guid="C54AC51B-EFE6-49FE-BCB9-1872B20F4E03">
+        <File Source="deploy\opengl32sw.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllOpenGL" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <!-- vcpkg -->
+      <Component Id="DllFlac" Guid="4458CE0E-B227-4F18-A77F-C3D32DAB0D41">
+        <File Source="C:\vcpkg\installed\x64-windows\bin\FLAC.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllFlac" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="DllTag" Guid="A7A830AE-4239-4707-8DC3-D82D2CE35B14">
+        <File Source="C:\vcpkg\installed\x64-windows\bin\tag.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllTag" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="DllOgg" Guid="82E8AADF-2347-47C5-8B03-1E4FC72215E9">
+        <File Source="C:\vcpkg\installed\x64-windows\bin\ogg.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllOgg" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="DllZlib" Guid="B6E5778D-B6D2-408A-953B-245C2C87D5B9">
+        <File Source="C:\vcpkg\installed\x64-windows\bin\zlib1.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllZlib" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <!-- アイコン -->
+      <Component Id="IconFile" Guid="BECF12A1-473B-49B6-BD99-78DFC7568A82">
+        <File Id="AppIcon" Source="resources\icon.ico" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="IconFile" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ===== platforms ===== -->
+    <DirectoryRef Id="PlatformsDir">
+      <Component Id="DllQwindows" Guid="8C837460-C6BB-4C40-B9A6-FC53FC0929CE">
+        <File Source="deploy\platforms\qwindows.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllQwindows" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ===== styles ===== -->
+    <DirectoryRef Id="StylesDir">
+      <Component Id="DllQmodern" Guid="91D2B5FF-D67F-4CDB-A10E-E61EEC810EF1">
+        <File Source="deploy\styles\qmodernwindowsstyle.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllQmodern" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ===== tls ===== -->
+    <DirectoryRef Id="TlsDir">
+      <Component Id="DllTls1" Guid="D6AFA700-9639-4D4F-9E61-6774F4B54F13">
+        <File Source="deploy\tls\qcertonlybackend.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllTls1" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="DllTls2" Guid="614C6481-C3F3-4ECE-93EB-5087015A5D59">
+        <File Source="deploy\tls\qschannelbackend.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllTls2" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ===== networkinformation ===== -->
+    <DirectoryRef Id="NetInfoDir">
+      <Component Id="DllNetInfo" Guid="C1C8BD52-6556-48F6-9DB7-A59E30D169C9">
+        <File Source="deploy\networkinformation\qnetworklistmanager.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllNetInfo" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ===== iconengines ===== -->
+    <DirectoryRef Id="IconEnginesDir">
+      <Component Id="DllSvgIcon" Guid="2EBEBA77-D8BB-49AA-88A9-889BF73959F3">
+        <File Source="deploy\iconengines\qsvgicon.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllSvgIcon" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ===== imageformats ===== -->
+    <DirectoryRef Id="ImageFormatsDir">
+      <Component Id="DllQgif" Guid="D7AB2DB5-BBEB-4DE1-AA4C-F6675C02F56C">
+        <File Source="deploy\imageformats\qgif.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllQgif" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="DllQico" Guid="1D3D739A-024E-4C86-A25A-FDDFC59ED51A">
+        <File Source="deploy\imageformats\qico.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllQico" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="DllQjpeg" Guid="E03F4DD1-4B27-467F-811E-2EE6E2F11882">
+        <File Source="deploy\imageformats\qjpeg.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllQjpeg" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="DllQsvg" Guid="42EA1C19-1F69-4B28-952F-4FD8B83CFA0E">
+        <File Source="deploy\imageformats\qsvg.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllQsvg" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ===== generic ===== -->
+    <DirectoryRef Id="GenericDir">
+      <Component Id="DllQtuio" Guid="90830A3B-64D1-4DC1-879A-3ACF622BB166">
+        <File Source="deploy\generic\qtuiotouchplugin.dll" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="DllQtuio" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ===== スタートメニュー ===== -->
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="StartMenuShortcut" Guid="*">
+        <Shortcut Id="AppStartMenuShortcut"
+                  Name="Always CD Ripper"
+                  Description="Always CD Ripper"
+                  Target="[INSTALLFOLDER]AlwaysCDRipper.exe"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="AppIconRef" />
+        <RemoveFolder Id="CleanupStartMenu" Directory="ApplicationProgramsFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="StartMenu" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="DesktopFolder">
+      <Component Id="DesktopShortcut" Guid="8EC44E12-1088-4CAB-8EA6-D1286480EB38">
+        <Shortcut Id="AppDesktopShortcut"
+                  Name="Always CD Ripper"
+                  Description="Always CD Ripper"
+                  Target="[INSTALLFOLDER]AlwaysCDRipper.exe"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="AppIconRef" />
+        <RemoveFolder Id="CleanupDesktop" Directory="DesktopFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\YOUICHI SAIJO\AlwaysCDRipper" Name="Desktop" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <Icon Id="AppIconRef" SourceFile="resources\icon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIconRef" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/YOUICHI-del/always-player" />
+
+    <Feature Id="MainFeature" Title="Always CD Ripper" Level="1">
+      <ComponentRef Id="RemoveInstallFolder" />
+      <ComponentRef Id="RemovePlatformsDir" />
+      <ComponentRef Id="RemoveStylesDir" />
+      <ComponentRef Id="RemoveTlsDir" />
+      <ComponentRef Id="RemoveNetInfoDir" />
+      <ComponentRef Id="RemoveIconEnginesDir" />
+      <ComponentRef Id="RemoveImageFormatsDir" />
+      <ComponentRef Id="RemoveGenericDir" />
+      <ComponentRef Id="MainExe" />
+      <ComponentRef Id="DllQtCore" />
+      <ComponentRef Id="DllQtGui" />
+      <ComponentRef Id="DllQtWidgets" />
+      <ComponentRef Id="DllQtNetwork" />
+      <ComponentRef Id="DllQtSvg" />
+      <ComponentRef Id="DllD3D" />
+      <ComponentRef Id="DllIcu" />
+      <ComponentRef Id="DllOpenGL" />
+      <ComponentRef Id="DllFlac" />
+      <ComponentRef Id="DllTag" />
+      <ComponentRef Id="DllOgg" />
+      <ComponentRef Id="DllZlib" />
+      <ComponentRef Id="IconFile" />
+      <ComponentRef Id="DllQwindows" />
+      <ComponentRef Id="DllQmodern" />
+      <ComponentRef Id="DllTls1" />
+      <ComponentRef Id="DllTls2" />
+      <ComponentRef Id="DllNetInfo" />
+      <ComponentRef Id="DllSvgIcon" />
+      <ComponentRef Id="DllQgif" />
+      <ComponentRef Id="DllQico" />
+      <ComponentRef Id="DllQjpeg" />
+      <ComponentRef Id="DllQsvg" />
+      <ComponentRef Id="DllQtuio" />
+      <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="DesktopShortcut" />
+    </Feature>
+
+  </Product>
+</Wix>

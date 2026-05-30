@@ -51,6 +51,14 @@ bool TagWriter::write(const QString &flacPath, const TrackTag &tag)
         xiph->addField("TRACKTOTAL",
             toTL(QString::number(tag.totalTracks)));
 
+    // DISC番号・総DISC数
+    if (tag.discNumber > 0)
+        xiph->addField("DISCNUMBER",
+            toTL(QString::number(tag.discNumber)));
+    if (tag.totalDiscs > 0)
+        xiph->addField("DISCTOTAL",
+            toTL(QString::number(tag.totalDiscs)));
+
     // アルバムアート
     if (!tag.coverArt.isNull()) {
         QBuffer buf;

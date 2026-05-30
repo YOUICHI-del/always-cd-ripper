@@ -1,36 +1,38 @@
 #pragma once
-#include <QObject>
+#include <QString>
 #include <QVector>
-#include <QNetworkAccessManager>
+#include "../ripper/CdDrive.h"
 
-struct MbRelease {
-    QString id;
+struct MbTrack {
+    int     number;
     QString title;
-    QString artist;
-    QString date;
-    QString label;
-    QVector<QString> trackTitles;
+    int     discNumber = 1;
 };
 
-class MusicBrainz : public QObject
+struct MbDisc {
+    int              position;
+    QVector<MbTrack> tracks;
+};
+
+struct MbRelease {
+    QString          title;
+    QString          artist;
+    QString          date;
+    QString          mbid;
+    int              totalDiscs = 1;
+    QVector<MbDisc>  discs;
+
+    // 後方互換：disc1のトラックを返す
+    QVector<MbTrack> tracks;
+};
+
+class MusicBrainz
 {
-    Q_OBJECT
 public:
-    explicit MusicBrainz(QObject *parent = nullptr);
+    static MbRelease  lookup(const DiscInfo &disc);
+    static QString    calcDiscId(const DiscInfo &disc);
+    static QByteArray httpGet(const QString &urlStr);
 
-    // Disc ID から候補リリースを非同期で取得
-    void lookup(const QString &discId);
-
-signals:
-    void resultsReady(QVector<MbRelease> releases);
-    void error(const QString &message);
-
-private slots:
-    void onReply(QNetworkReply *reply);
-
-private:
-    QNetworkAccessManager *m_nam;
-    // User-Agent は MusicBrainz の API ポリシー上必須
-    static constexpr const char *USER_AGENT =
-        "AlwaysCDRipper/1.0.0 ( https://github.com/YOUICHI-del )";
+    // ★ 追加：アルバムアート取得
+    static QByteArray fetchCoverArt(const QString &mbid);
 };

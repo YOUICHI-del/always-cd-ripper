@@ -202,8 +202,7 @@ DiscInfo CdDrive::parseCue(const QString &cuePath)
                     if (szBuf.size() < 4) break;
                     quint32 chunkSize = *reinterpret_cast<const quint32*>(szBuf.constData());
                     if (chunkId == "data") {
-                        wavHeaderSize = wf.pos() - 8; // dataチャンクヘッダ前まで
-                        wavHeaderSize = wf.pos();     // dataの開始位置
+                        wavHeaderSize = wf.pos();     // dataチャンクの開始位置
                         break;
                     }
                     wf.seek(wf.pos() + chunkSize);
@@ -349,41 +348,95 @@ QByteArray CdDrive::readSectorFromBin(DWORD lba)
 
 QByteArray CdDrive::readSectorFromDrive(DWORD lba)
 {
-    RAW_READ_INFO rri = {};
-    rri.DiskOffset.QuadPart = (LONGLONG)lba * 2048;
-    rri.SectorCount = 1;
-    rri.TrackMode   = CDDA;
+    // ── 複数セクタまとめ読み方式 ────────────────────────────────
+    // IOCTL_CDROM_RAW_READ は1セクタずつ読むとドライブが同じ位置を
+    // 繰り返し読むループが起きる場合がある。
+    // fre:ac / CDparanoia と同様に複数セクタをまとめて読み、
+    // 目的のセクタだけを切り出す方式に変更。
+    static constexpr int READ_SECTORS   = 27;  // 1回で読むセクタ数
+    static constexpr int PHASE1_RETRIES =  5;  // 高速リトライ
+    static constexpr int PHASE2_RETRIES = 20;  // キャッシュフラッシュ＋短待機
+    static constexpr int PHASE3_RETRIES = 10;  // 長待機（ドライブを休ませる）
 
-    QByteArray buf(CD_RAW_SECTOR_SIZE, '\0');
-    DWORD bytesReturned = 0;
-
-    static constexpr int MAX_RETRIES = 10;
-    m_lastRetryCount  = 0;
-    m_lastC2Errors    = 0;
+    m_lastRetryCount    = 0;
+    m_lastC2Errors      = 0;
     m_lastReadSpeedKBps = 0;
 
     LARGE_INTEGER freq, t0, t1;
     QueryPerformanceFrequency(&freq);
     QueryPerformanceCounter(&t0);
 
-    for (int attempt = 0; attempt <= MAX_RETRIES; ++attempt) {
+    // 読み取り開始セクタ（目的LBAの少し手前から読む）
+    DWORD startLba = (lba >= (DWORD)(READ_SECTORS / 2))
+                     ? lba - READ_SECTORS / 2 : 0;
+    int   offset   = (int)(lba - startLba) * CD_RAW_SECTOR_SIZE;
+
+    QByteArray multiBuf(CD_RAW_SECTOR_SIZE * READ_SECTORS, '\0');
+
+    auto tryReadMulti = [&](DWORD sLba) -> bool {
+        RAW_READ_INFO rri = {};
+        rri.DiskOffset.QuadPart = (LONGLONG)sLba * 2048;
+        rri.SectorCount = READ_SECTORS;
+        rri.TrackMode   = CDDA;
+        DWORD bytesReturned = 0;
         BOOL ok = DeviceIoControl(
             m_handle, IOCTL_CDROM_RAW_READ,
             &rri, sizeof(rri),
-            buf.data(), CD_RAW_SECTOR_SIZE,
+            multiBuf.data(), CD_RAW_SECTOR_SIZE * READ_SECTORS,
             &bytesReturned, nullptr);
+        return ok && bytesReturned == (DWORD)(CD_RAW_SECTOR_SIZE * READ_SECTORS);
+    };
 
-        if (ok && bytesReturned == (DWORD)CD_RAW_SECTOR_SIZE) {
+    // ── フェーズ1: 待機なし高速リトライ ─────────────────────────
+    for (int i = 0; i < PHASE1_RETRIES; ++i) {
+        if (tryReadMulti(startLba)) {
             QueryPerformanceCounter(&t1);
             double sec = (double)(t1.QuadPart - t0.QuadPart) / freq.QuadPart;
-            // 2352バイト / 経過秒 → KB/s
             if (sec > 0.0)
                 m_lastReadSpeedKBps = (int)(CD_RAW_SECTOR_SIZE / sec / 1024.0);
-            return buf;
+            m_lastRetryCount = i;
+            return multiBuf.mid(offset, CD_RAW_SECTOR_SIZE);
         }
     }
 
-    // 全リトライ失敗 → エラーセクタ
-    m_lastC2Errors = 1;
+    // ── フェーズ2: キャッシュフラッシュ＋10ms待機 ───────────────
+    for (int i = 0; i < PHASE2_RETRIES; ++i) {
+        DWORD flushLba = (startLba > 100) ? startLba - 100 : startLba + 100;
+        RAW_READ_INFO flush = {};
+        flush.DiskOffset.QuadPart = (LONGLONG)flushLba * 2048;
+        flush.SectorCount = READ_SECTORS;
+        flush.TrackMode   = CDDA;
+        QByteArray tmp(CD_RAW_SECTOR_SIZE * READ_SECTORS, '\0');
+        DWORD dummy = 0;
+        DeviceIoControl(m_handle, IOCTL_CDROM_RAW_READ,
+            &flush, sizeof(flush), tmp.data(),
+            CD_RAW_SECTOR_SIZE * READ_SECTORS, &dummy, nullptr);
+        Sleep(10);
+        if (tryReadMulti(startLba)) {
+            QueryPerformanceCounter(&t1);
+            double sec = (double)(t1.QuadPart - t0.QuadPart) / freq.QuadPart;
+            if (sec > 0.0)
+                m_lastReadSpeedKBps = (int)(CD_RAW_SECTOR_SIZE / sec / 1024.0);
+            m_lastRetryCount = PHASE1_RETRIES + i;
+            return multiBuf.mid(offset, CD_RAW_SECTOR_SIZE);
+        }
+    }
+
+    // ── フェーズ3: 100ms休ませてリトライ ────────────────────────
+    for (int i = 0; i < PHASE3_RETRIES; ++i) {
+        Sleep(100);
+        if (tryReadMulti(startLba)) {
+            QueryPerformanceCounter(&t1);
+            double sec = (double)(t1.QuadPart - t0.QuadPart) / freq.QuadPart;
+            if (sec > 0.0)
+                m_lastReadSpeedKBps = (int)(CD_RAW_SECTOR_SIZE / sec / 1024.0);
+            m_lastRetryCount = PHASE1_RETRIES + PHASE2_RETRIES + i;
+            return multiBuf.mid(offset, CD_RAW_SECTOR_SIZE);
+        }
+    }
+
+    // ── 全フェーズ失敗 ───────────────────────────────────────────
+    m_lastRetryCount = PHASE1_RETRIES + PHASE2_RETRIES + PHASE3_RETRIES;
+    m_lastC2Errors   = 1;
     return {};
 }

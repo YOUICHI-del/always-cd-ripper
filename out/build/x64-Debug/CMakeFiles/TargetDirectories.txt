@@ -1,0 +1,8 @@
+C:/Users/jokun/Downloads/AlwaysCDRipper2/out/build/x64-Debug/CMakeFiles/AlwaysCDRipper.dir
+C:/Users/jokun/Downloads/AlwaysCDRipper2/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Users/jokun/Downloads/AlwaysCDRipper2/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
+C:/Users/jokun/Downloads/AlwaysCDRipper2/out/build/x64-Debug/CMakeFiles/list_install_components.dir
+C:/Users/jokun/Downloads/AlwaysCDRipper2/out/build/x64-Debug/CMakeFiles/install.dir
+C:/Users/jokun/Downloads/AlwaysCDRipper2/out/build/x64-Debug/CMakeFiles/install/local.dir
+C:/Users/jokun/Downloads/AlwaysCDRipper2/out/build/x64-Debug/CMakeFiles/AlwaysCDRipper_autogen_timestamp_deps.dir
+C:/Users/jokun/Downloads/AlwaysCDRipper2/out/build/x64-Debug/CMakeFiles/AlwaysCDRipper_autogen.dir

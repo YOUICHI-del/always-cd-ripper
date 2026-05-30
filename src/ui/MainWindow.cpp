@@ -419,7 +419,7 @@ QWidget *MainWindow::buildStep1_Output()
     auto *prevLabel = new QLabel(
         "出力先\\\n"
         "  └─ アーティスト名\\\n"
-        "       └─ (年) アルバム名\\\n"
+        "       └─ アルバム名\\\n"
         "             ├─ 01. 曲名.flac\n"
         "             ├─ 02. 曲名.flac\n"
         "             └─ cover.jpg"
@@ -1225,9 +1225,23 @@ void MainWindow::onRipClicked()
     QString artist = m_edArtist->text().isEmpty() ? "Unknown" : m_edArtist->text();
     QString album  = m_edAlbum->text().isEmpty()  ? "Unknown" : m_edAlbum->text();
     QString year   = m_edYear->text();
-    QString albumFolder = year.isEmpty()
-        ? QString("%1/%2").arg(artist, album)
-        : QString("%1/(%2) %3").arg(artist, year, album);
+
+    // アーティスト名: " - 楽器名" など " - " 以降を除去
+    // 例: "Bob van Asperen - Original Ruckers Harpsichord" → "Bob van Asperen"
+    int dashPos = artist.indexOf(" - ");
+    if (dashPos > 0) artist = artist.left(dashPos).trimmed();
+
+    // アルバム名: "(年代)" などの括弧部分を除去
+    // 例: "Harpsichord In The Netherlands (1580-1712)" → "Harpsichord In The Netherlands"
+    album.remove(QRegularExpression(R"(\s*\([^)]*\))"));
+    album = album.trimmed();
+
+    // パスに使えない文字を除去
+    QString safeArtist = artist; safeArtist.remove(QRegularExpression(R"([\\/:*?"<>|])"));
+    QString safeAlbum  = album;  safeAlbum.remove(QRegularExpression(R"([\\/:*?"<>|])"));
+
+    // 例: Bob van Asperen - Harpsichord In The Netherlands
+    QString albumFolder = QString("%1 - %2").arg(safeArtist, safeAlbum);
 
     // 複数DISCの場合は Disc1/ Disc2/ サブフォルダに分ける
     QString outDir = m_outputPath->text() + "/" + albumFolder;
@@ -1557,7 +1571,7 @@ void MainWindow::onSettingsClicked()
     nameLabel->setAlignment(Qt::AlignCenter);
     avl->addWidget(nameLabel);
 
-    auto *verLabel = new QLabel("Version 1.0.0");
+    auto *verLabel = new QLabel("Version 1.0.0 (build " BUILD_NUMBER ")");
     verLabel->setObjectName("aboutVer");
     verLabel->setAlignment(Qt::AlignCenter);
     avl->addWidget(verLabel);
@@ -1586,14 +1600,14 @@ void MainWindow::onSettingsClicked()
     line2->setObjectName("hline");
     avl->addWidget(line2);
 
-    auto *authorLabel = new QLabel("© 2026  YOUICHI SAIJO");
+    auto *authorLabel = new QLabel("© 2026  YOUICHI SAIJO  GPL-3.0");
     authorLabel->setObjectName("aboutAuthor");
     authorLabel->setAlignment(Qt::AlignCenter);
     avl->addWidget(authorLabel);
 
     auto *urlLabel = new QLabel(
-        "<a href='https://github.com/YOUICHI-del' "
-        "style='color:#4db8ff;'>github.com/YOUICHI-del</a>");
+        "<a href='https://always-player.sakuraweb.com/' "
+        "style='color:#4db8ff;'>always-player.sakuraweb.com</a>");
     urlLabel->setOpenExternalLinks(true);
     urlLabel->setAlignment(Qt::AlignCenter);
     avl->addWidget(urlLabel);

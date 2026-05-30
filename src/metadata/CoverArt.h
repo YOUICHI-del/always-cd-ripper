@@ -1,30 +1,38 @@
 #pragma once
-#include <QObject>
 #include <QPixmap>
-#include <QNetworkAccessManager>
+#include <QString>
+#include <QStringList>
+#include <QByteArray>
 
-class CoverArt : public QObject
+// iTunes から取得できるアルバム情報
+struct iTunesAlbumInfo {
+    QString     artist;
+    QString     album;
+    QString     year;
+    QString     artUrl;    // アートワークURL（600x600）
+    QStringList tracks;    // トラック名リスト（曲順）
+    bool isValid() const { return !album.isEmpty(); }
+};
+
+class CoverArt
 {
-    Q_OBJECT
 public:
-    explicit CoverArt(QObject *parent = nullptr);
+    void setDiscogsToken(const QString &token) { discogsToken = token; }
+    QString getDiscogsToken() const { return discogsToken; }
 
-    // アーティスト名・アルバム名でMusicBrainzを検索してアートを取得
-    void fetch(const QString &artist, const QString &album);
+    // メイン：アーティスト名＋アルバム名からカバーアートを取得
+    QPixmap fetch(const QString &artist, const QString &album);
 
-    // 同期版（RipWorkerスレッドから使用）
-    QPixmap fetchSync(const QString &artist, const QString &album);
+    // ★ 新規：iTunes からアルバム情報（曲名含む）を一括取得
+    iTunesAlbumInfo searchITunesFull(const QString &artist, const QString &album);
 
-signals:
-    void imageReady(QPixmap pixmap);
-    void error(const QString &msg);
+    // 個別検索（後方互換）
+    QString searchITunes(const QString &artist, const QString &album);
+    QString searchDiscogs(const QString &artist, const QString &album);
+    QString searchMusicBrainzReleaseId(const QString &artist, const QString &album);
+    QString musicBrainzCoverUrl(const QString &mbid);
 
 private:
-    QPixmap downloadImage(const QString &url);
-    QString searchITunes(const QString &artist, const QString &album);
-
-    QNetworkAccessManager *m_nam = nullptr;
-
-    static constexpr const char *USER_AGENT =
-        "AlwaysCDRipper/1.0.0 ( https://github.com/YOUICHI-del )";
+    QString discogsToken;
+    QByteArray httpGet(const QString &url);
 };

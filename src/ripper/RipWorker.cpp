@@ -274,12 +274,10 @@ void RipWorker::runPhysicalCD()
         return;
     }
 
-    DWORD totalSectors = m_disc.totalSectors;
-    quint32 dataSize   = totalSectors * 2352;
-    writeWavHeader(wavFile, dataSize);
-
     DWORD firstSector = m_disc.tracks.first().startSector;
-    DWORD lastSector  = totalSectors + firstSector - 1;
+    DWORD lastSector  = m_disc.tracks.last().endSector;  // 修正: totalSectors+firstSector-1 は範囲超過バグ
+    quint32 dataSize  = (lastSector - firstSector + 1) * 2352;
+    writeWavHeader(wavFile, dataSize);
 
     // WAV読み取りループ：セクタ単位でエラーを検出し sectorDone を emit する
     // トラック単位のエラー数も集計する
@@ -292,6 +290,24 @@ void RipWorker::runPhysicalCD()
 
     for (DWORD lba = firstSector; lba <= lastSector; ++lba) {
         QByteArray sector = m_drive->readSectorRaw(lba);
+
+        // ── キープアライブ処理 ────────────────────────────────
+        // 100セクタごとにTOCを軽く読んでUSBドライバーのタイムアウトを防ぐ
+        // fre:acと同様の「定期的な軽いコマンド送信」でUSB接続を維持する
+        if ((lba - firstSector) % 100 == 0 && lba > firstSector) {
+            m_drive->readToc();  // 軽いコマンドでUSB接続を維持
+        }
+
+        // ── トラック境界での小休止 ───────────────────────────
+        // トラックが変わるタイミングでドライブを少し休ませる
+        // これによりレーザーの熱を逃がし、次のトラックの読み取り精度が上がる
+        for (int ti = 0; ti < m_disc.tracks.size(); ++ti) {
+            if (lba == m_disc.tracks[ti].startSector && lba > firstSector) {
+                Sleep(500);  // トラック境界で500ms休憩
+                break;
+            }
+        }
+        // ────────────────────────────────────────────────────
 
         SectorResult sr;
         sr.lba        = lba;
@@ -362,15 +378,18 @@ void RipWorker::runPhysicalCD()
     if (!coverArt.isNull())
         coverArt.save(m_outDir + "/cover.jpg", "JPEG", 90);
 
-    DiscInfo cueDisc = m_drive->parseCue(cuePath);
+    // 修正: openCueでドライブをCUEモードに切り替えてからreadTrackする
+    // parseCueのみでは m_drive が物理CDモードのままで読み取り先がWAVにならない
+    m_drive->openCue(cuePath);
+    DiscInfo cueDisc = m_drive->readToc();
     for (int i = 0; i < cueDisc.tracks.size() && i < m_disc.tracks.size(); ++i) {
         if (!m_disc.tracks[i].title.isEmpty())
             cueDisc.tracks[i].title = m_disc.tracks[i].title;
     }
 
     ParanoiaReader reader;
-    // 物理CDモード強制: CUEトラック情報でも投票方式・色変化を有効にする
-    reader.setForcePhysicalMode(true);
+    // CUEモードで読むので forcePhysical は不要（WAVファイルから直接読む）
+    reader.setForcePhysicalMode(false);
     reader.setSectorCallback([this](const SectorResult &sr) {
         // Step3（FLAC変換）ではsectorDoneを送らない
         // Purityは既にStep1（WAV読み取り）で集計済み

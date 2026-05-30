@@ -10,6 +10,8 @@ struct TrackTag {
     QString label;
     int     trackNumber = 0;
     int     totalTracks = 0;
+    int     discNumber  = 0;   // 0=未設定
+    int     totalDiscs  = 0;   // 0=未設定
     QPixmap coverArt;
 };
 
